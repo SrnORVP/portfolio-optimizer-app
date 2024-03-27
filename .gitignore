@@ -29,6 +29,10 @@ package-lock.json
 .*rc*
 
 # Custom
-*/.archive
-*/.dump
+**/.archive
+**/.dump
+**/.logs
+**/.plots
+**/.plotly
+**/.ef_plots
 **/*.xlsx

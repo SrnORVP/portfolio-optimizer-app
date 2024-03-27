@@ -1,0 +1,232 @@
+from email.policy import strict
+from io import StringIO
+from pathlib import Path
+from tkinter import W
+import pytest
+from typing import TypeAlias
+
+import pandas as pd, numpy as np
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+
+nda: TypeAlias = np.ndarray
+
+
+class PortPlot:
+    FIGSIZE = (10, 8)
+
+    @classmethod
+    def _check_zipable(cls, x_vals: nda, y_vals: nda):
+        assert isinstance(x_vals, nda) and isinstance(
+            y_vals, nda
+        ), "The inputs are not numpy arrays"
+        assert (
+            x_vals.shape == y_vals.shape
+        ), "The input numpy array are not the same shape"
+        # np.dstack((x_vals, y_vals))
+
+    @classmethod
+    def _array_stacks(cls, *args):
+        bools = [isinstance(e, nda) for e in args]
+        assert all(bools), "Not all input are numpy arrays"
+        return np.vstack(args).transpose()
+
+    _port_res = None
+    _front_res = None
+
+    _possible_plots = {
+        "stock": True,
+        "all": False,
+        "with_sim": False,
+        "with_frontier": False,
+        "sim_and_frontier": False,
+    }
+    _plot_dict = dict()
+
+    def __init__(
+        self,
+        stocks_labels,
+        stocks_risk,
+        stocks_return,
+        portfolio_risk=None,
+        portfolio_return=None,
+        frontier_risk=None,
+        frontier_return=None,
+    ) -> None:
+
+        self._check_zipable(stocks_risk, stocks_return)
+        self._has_value = [True, False, False]
+
+        if portfolio_risk is not None and portfolio_return is not None:
+            self._check_zipable(portfolio_risk, portfolio_return)
+            self._has_value[1] = True
+
+        if frontier_risk is not None and frontier_return is not None:
+            self._check_zipable(frontier_risk, frontier_return)
+            self._has_value[2] = True
+
+        args = (
+            stocks_labels,
+            stocks_risk,
+            stocks_return,
+            portfolio_risk,
+            portfolio_return,
+            frontier_risk,
+            frontier_return,
+        )
+        self._check_plot_possibility(*args)
+        self._bind_id_with_plot_xy(*args)
+
+    def _check_plot_possibility(self, n, ris, ret, s_ris, s_ret, f_ris, f_ret):
+        self._stocks = (n, ris, ret)
+        match self._has_value:
+            case [True, True, False]:
+                self._possible_plots["with_sim"] = True
+                self._port_res = (s_ris, s_ret)
+            case [True, False, True]:
+                self._possible_plots["with_frontier"] = True
+                self._front_res = (f_ris, f_ret)
+            case [True, True, True]:
+                self._possible_plots["all"] = True
+                self._possible_plots["with_sim"] = True
+                self._possible_plots["with_frontier"] = True
+                self._possible_plots["sim_and_frontier"] = True
+                self._port_res = (s_ris, s_ret)
+                self._front_res = (f_ris, f_ret)
+
+    def _bind_id_with_plot_xy(self, n, ris, ret, s_ris, s_ret, f_ris, f_ret):
+        self._plot_dict = dict()
+        for k, possible in self._possible_plots.items():
+            if possible:
+                match k:
+                    case "stock":
+                        self._plot_dict["stock"] = ((ris), (ret))
+                    case "all":
+                        self._plot_dict["all"] = (
+                            (ris, s_ris, f_ris),
+                            (ret, s_ret, f_ret),
+                        )
+                    case "with_sim":
+                        self._plot_dict["with_sim"] = ((ris, s_ris), (ret, s_ret))
+                    case "with_frontier":
+                        self._plot_dict["with_frontier"] = ((ris, f_ris), (ret, f_ret))
+                    case "sim_and_frontier":
+                        self._plot_dict["sim_and_frontier"] = (
+                            (s_ris, f_ris),
+                            (s_ret, f_ret),
+                        )
+            else:
+                self._plot_dict[k] = None
+
+    def _all_x(self, plot_id):
+        return np.hstack(self._plot_dict[plot_id][0])
+
+    def _all_y(self, plot_id):
+        return np.hstack(self._plot_dict[plot_id][1])
+
+    def _scale_axis(self, plot_id, precision=2):
+        min_margin = 0.08
+        max_margin = 1.02
+        factor = 10**precision
+
+        xs = self._all_x(plot_id)
+        ys = self._all_y(plot_id)
+
+        def standardize_axis(min_val, factor, offset):
+            if np.sign(min_val) == 1:
+                return np.floor(min_val * (1 - offset) * factor) / factor
+            else:
+                return -np.floor(-min_val * (1 + offset) * factor) / factor
+
+        x_min = standardize_axis(np.min(xs), factor, min_margin)
+        y_min = standardize_axis(np.min(ys), factor, min_margin)
+        x_max = np.ceil(np.max(xs) * max_margin * factor) / factor
+        y_max = np.ceil(np.max(ys) * max_margin * factor) / factor
+        return x_min, x_max, y_min, y_max
+
+    def _get_plot_labels(self):
+        labels = {
+            "title": "Efficient Frontier by Simulation",
+            "xlabel": "Annualized Risk",
+            "ylabel": "Annualized Return",
+        }
+        return labels
+
+    def _check_plot_possible(self, plot_id):
+        if not self._possible_plots[plot_id]:
+            ValueError(f"Plot of '{plot_id}' is not possible with current inputs")
+
+    def plot_result(self, plot_id="stock", with_labels=True):
+        self._check_plot_possible(plot_id)
+
+        fig, ax = plt.subplots(figsize=self.FIGSIZE)
+        ax.set(**self._get_plot_labels())
+
+        x_all, y_all = self._all_x(plot_id), self._all_y(plot_id)
+
+        x1, x2, y1, y2 = self._scale_axis(plot_id)
+        ax.set_xlim(x1, x2)
+        ax.set_ylim(y1, y2)
+        ax.set_xticks(np.linspace(x1, x2, 10))
+        ax.set_yticks(np.linspace(y1, y2, 20))
+        ax.grid()
+
+        ax.scatter(x=x_all, y=y_all, c="orange")
+
+        if with_labels:
+            for k, r, ar in zip(*self._stocks):
+                ax.annotate(
+                    k, (r, ar), (r * 1.01, ar), arrowprops={"arrowstyle": "wedge"}
+                )
+
+        match plot_id:
+            case "all" | "with_frontier" | "sim_and_frontier":
+                ax.plot(self._front_res[0], self._front_res[1], c="red")
+
+        self.plt = fig
+        self.ax = ax
+
+    def plotly_result(self, plot_id="stock", with_labels=True):
+        self._check_plot_possible(plot_id)
+
+        x_all, y_all = self._all_x(plot_id), self._all_y(plot_id)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=x_all, y=y_all, mode="markers", name="markers"))
+
+        if with_labels:
+            raise NotImplementedError
+
+        match plot_id:
+            case "all" | "with_frontier" | "sim_and_frontier":
+                fig.add_trace(
+                    go.Scatter(
+                        x=self._front_res[0],
+                        y=self._front_res[1],
+                        mode="lines",
+                        name="lines",
+                    )
+                )
+
+        self.plt = fig
+
+    def plot_collecton(self, engine="plotly", semantic_save=False, **kwargs):
+        cases = [k for k, v in self._possible_plots.items() if v]
+        ret_coll = dict()
+        match engine:
+            case "plotly":
+                for e in cases:
+                    self.plotly_result(plot_id=e, **kwargs)
+                    ret_coll[e] = self.plt.to_html(include_plotlyjs="directory")
+            case "matplotlib":
+                for e in cases:
+                    self.plot_result(plot_id=e, **kwargs)
+                    sio = StringIO()
+                    self.plt.savefig(sio, format="svg", pad_inches=0.05)
+                    ret_coll[e] = sio.getvalue()
+
+        if semantic_save:
+            # if not false, then it is a directory to save the figures/ html
+            assert (dir_name := Path(semantic_save).resolve(strict=True))
+            for k, v in ret_coll.items():
+                with open(dir_name / f"{k}.html", "w") as fp:
+                    fp.write(v)

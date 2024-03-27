@@ -1,4 +1,3 @@
-
 import pytest
 from pathlib import Path
 from sys import path
@@ -7,10 +6,12 @@ from datetime import datetime as dt, timedelta as td
 import pandas as pd
 import numpy as np
 
+
 py_files = Path(__file__).parent.parent / "src-tauri" / "py-app"
 path.insert(0, str(py_files))
 
-from efficient_frontier import EfficientFrontier
+from frontier import EfficientFrontier
+from plot import PortPlot
 
 
 @pytest.fixture
@@ -19,7 +20,7 @@ def mocked_ef():
     start = "2019-03-08"
     end = "2019-03-12"
 
-    mock = np.array( [[1, 1], [1.1, 0.9]])
+    mock = np.array([[1, 1], [1.1, 0.9]])
     ef = EfficientFrontier(codes)
     ef.raw_df = ef.download_stock_data(codes, start, end)
 
@@ -31,7 +32,7 @@ def mocked_ef():
 @pytest.fixture
 def mocked_ef_no_change():
     codes = ["GOOG", "AAPL", "MSFT"]
-    format = '%Y-%m-%d'
+    format = "%Y-%m-%d"
     start = dt.strptime("2019-03-08", format)
     end = (start + td(100)).date()
 
@@ -58,7 +59,7 @@ def mocked_wt_weight(mocked_ef_no_change):
 @pytest.fixture
 def real_ef():
     codes = ["GOOG", "AAPL", "MSFT"]
-    format = '%Y-%m-%d'
+    format = "%Y-%m-%d"
 
     start = "2017-03-03"
     end = "2022-03-03"
@@ -73,4 +74,17 @@ def real_ef():
     return ef
 
 
+@pytest.fixture
+def plot_dummy():
+    n = np.array([str(e) for e in range(0, 11)])
+    x = np.linspace(1, 2, num=10)
+    y = np.linspace(3, 4, num=10)
+    return PortPlot(n, x, y, x, y)
 
+
+@pytest.fixture
+def simulated_real_ef(real_ef):
+    real_ef.generate_portfolio_weights()
+    real_ef.run_simulation()
+    real_ef.get_efficient_frontier(from_max_risk=False, from_min_ret=True)
+    return real_ef
