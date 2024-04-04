@@ -1,7 +1,8 @@
-from email.policy import strict
-from io import StringIO
+from copy import copy, deepcopy
+from io import BytesIO, StringIO
 from pathlib import Path
-from tkinter import W
+
+from matplotlib.patches import FancyArrowPatch
 import pytest
 from typing import TypeAlias
 
@@ -10,6 +11,17 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 nda: TypeAlias = np.ndarray
+
+
+def arrow(x, y, ax):
+    # d = len(x) // (n + 1)
+    # ind = np.arange(d, len(x), d)
+    ind = range(1, len(x))
+    for i in ind:
+        ar = FancyArrowPatch(
+            (x[i - 1], y[i - 1]), (x[i], y[i]), arrowstyle="->", mutation_scale=20
+        )
+        ax.add_patch(ar)
 
 
 class PortPlot:
@@ -41,7 +53,8 @@ class PortPlot:
         "with_frontier": False,
         "sim_and_frontier": False,
     }
-    _plot_dict = dict()
+    _plot_vals_dict = dict()
+    _collection = dict()
 
     def __init__(
         self,
@@ -95,34 +108,37 @@ class PortPlot:
                 self._front_res = (f_ris, f_ret)
 
     def _bind_id_with_plot_xy(self, n, ris, ret, s_ris, s_ret, f_ris, f_ret):
-        self._plot_dict = dict()
+        self._plot_vals_dict = dict()
         for k, possible in self._possible_plots.items():
             if possible:
                 match k:
                     case "stock":
-                        self._plot_dict["stock"] = ((ris), (ret))
+                        self._plot_vals_dict["stock"] = ((ris), (ret))
                     case "all":
-                        self._plot_dict["all"] = (
+                        self._plot_vals_dict["all"] = (
                             (ris, s_ris, f_ris),
                             (ret, s_ret, f_ret),
                         )
                     case "with_sim":
-                        self._plot_dict["with_sim"] = ((ris, s_ris), (ret, s_ret))
+                        self._plot_vals_dict["with_sim"] = ((ris, s_ris), (ret, s_ret))
                     case "with_frontier":
-                        self._plot_dict["with_frontier"] = ((ris, f_ris), (ret, f_ret))
+                        self._plot_vals_dict["with_frontier"] = (
+                            (ris, f_ris),
+                            (ret, f_ret),
+                        )
                     case "sim_and_frontier":
-                        self._plot_dict["sim_and_frontier"] = (
+                        self._plot_vals_dict["sim_and_frontier"] = (
                             (s_ris, f_ris),
                             (s_ret, f_ret),
                         )
             else:
-                self._plot_dict[k] = None
+                self._plot_vals_dict[k] = None
 
     def _all_x(self, plot_id):
-        return np.hstack(self._plot_dict[plot_id][0])
+        return np.hstack(self._plot_vals_dict[plot_id][0])
 
     def _all_y(self, plot_id):
-        return np.hstack(self._plot_dict[plot_id][1])
+        return np.hstack(self._plot_vals_dict[plot_id][1])
 
     def _scale_axis(self, plot_id, precision=2):
         min_margin = 0.08
@@ -209,24 +225,53 @@ class PortPlot:
 
         self.plt = fig
 
-    def plot_collecton(self, engine="plotly", semantic_save=False, **kwargs):
+    def plot_collecton(self, engine=("plotly", "html"), semantic_save=False, **kwargs):
         cases = [k for k, v in self._possible_plots.items() if v]
         ret_coll = dict()
-        match engine:
+        eng, res = engine
+
+        match eng:
             case "plotly":
                 for e in cases:
                     self.plotly_result(plot_id=e, **kwargs)
-                    ret_coll[e] = self.plt.to_html(include_plotlyjs="directory")
+                    ret_coll[e] = deepcopy(self.plt)
+
+                match res:
+                    case "html":
+                        for k, v in ret_coll.items():
+                            self._collection[k] = v.to_html(
+                                include_plotlyjs="directory"
+                            )
+                    case "png":
+                        raise NotImplementedError
+
             case "matplotlib":
                 for e in cases:
                     self.plot_result(plot_id=e, **kwargs)
-                    sio = StringIO()
-                    self.plt.savefig(sio, format="svg", pad_inches=0.05)
-                    ret_coll[e] = sio.getvalue()
+                    ret_coll[e] = deepcopy(self.plt)
+
+                match res:
+                    case "html":
+                        for k, v in ret_coll.items():
+                            sio = StringIO()
+                            v.savefig(sio, format="svg", pad_inches=0.05)
+                            self._collection[k] = sio.getvalue()
+                    case "png":
+                        raise NotImplementedError
+                        # for k, v in ret_coll.items():
+                        #     bio = BytesIO()
+                        #     v.savefig(bio, format="svg", pad_inches=0.05)
+
+            case _:
+                raise NotImplementedError
 
         if semantic_save:
-            # if not false, then it is a directory to save the figures/ html
-            assert (dir_name := Path(semantic_save).resolve(strict=True))
-            for k, v in ret_coll.items():
-                with open(dir_name / f"{k}.html", "w") as fp:
-                    fp.write(v)
+            match res:
+                case "html":
+                    # if not false, then it is a directory to save the figures/ html
+                    assert (dir_name := Path(semantic_save).resolve(strict=True))
+                    for k, v in self._collection.items():
+                        with open(dir_name / f"{k}.html", "w") as fp:
+                            fp.write(v)
+        else:
+            return self._collection

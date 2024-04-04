@@ -50,31 +50,31 @@ def test_identify():
 
     pop = PortPlot(n, x, y)
     pop.plot_result()
-    pop.plt.savefig(".plots/1.html")
+    pop.plt.savefig(".plots/svg/1.svg")
 
     pop = PortPlot(n, x, y, x1, y1)
     pop.plot_result()
-    pop.plt.savefig(".plots/2.svg")
+    pop.plt.savefig(".plots/svg/2.svg")
     pop.plot_result(plot_id="with_sim")
-    pop.plt.savefig(".plots/3.svg")
+    pop.plt.savefig(".plots/svg/3.svg")
 
     pop = PortPlot(n, x, y, None, None, x2, y2)
     pop.plot_result()
-    pop.plt.savefig(".plots/4.svg")
+    pop.plt.savefig(".plots/svg/4.svg")
     pop.plot_result(plot_id="with_frontier")
-    pop.plt.savefig(".plots/5.svg")
+    pop.plt.savefig(".plots/svg/5.svg")
 
     pop = PortPlot(n, x, y, x1, y1, x2, y2)
     pop.plot_result()
-    pop.plt.savefig(".plots/6.svg")
+    pop.plt.savefig(".plots/svg/6.svg")
     pop.plot_result(plot_id="all")
-    pop.plt.savefig(".plots/7.svg")
+    pop.plt.savefig(".plots/svg/7.svg")
     pop.plot_result(plot_id="with_sim")
-    pop.plt.savefig(".plots/8.svg")
+    pop.plt.savefig(".plots/svg/8.svg")
     pop.plot_result(plot_id="with_frontier")
-    pop.plt.savefig(".plots/9.svg")
+    pop.plt.savefig(".plots/svg/9.svg")
     pop.plot_result(plot_id="sim_and_frontier")
-    pop.plt.savefig(".plots/10.svg")
+    pop.plt.savefig(".plots/svg/10.svg")
 
 
 @pytest.mark.plot
@@ -91,34 +91,34 @@ def test_identify_plotly():
 
     pop = PortPlot(n, x, y)
     pop.plotly_result(with_labels=False)
-    pop.plt.write_html(".plotly/1.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/1.html", include_plotlyjs="directory")
 
     pop = PortPlot(n, x, y, x1, y1)
     pop.plotly_result(with_labels=False)
-    pop.plt.write_html(".plotly/2.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/2.html", include_plotlyjs="directory")
 
     pop.plotly_result(plot_id="with_sim", with_labels=False)
-    pop.plt.write_html(".plotly/3.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/3.html", include_plotlyjs="directory")
 
     pop = PortPlot(n, x, y, None, None, x2, y2)
     pop.plotly_result(with_labels=False)
-    pop.plt.write_html(".plotly/4.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/4.html", include_plotlyjs="directory")
 
     pop.plotly_result(plot_id="with_frontier", with_labels=False)
-    pop.plt.write_html(".plotly/5.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/5.html", include_plotlyjs="directory")
 
     pop = PortPlot(n, x, y, x1, y1, x2, y2)
     pop.plotly_result(with_labels=False)
-    pop.plt.write_html(".plotly/6.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/6.html", include_plotlyjs="directory")
 
     pop.plotly_result(plot_id="all", with_labels=False)
-    pop.plt.write_html(".plotly/7.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/7.html", include_plotlyjs="directory")
 
     pop.plotly_result(plot_id="with_sim", with_labels=False)
-    pop.plt.write_html(".plotly/8.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/8.html", include_plotlyjs="directory")
 
     pop.plotly_result(plot_id="with_frontier", with_labels=False)
-    pop.plt.write_html(".plotly/9.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/9.html", include_plotlyjs="directory")
 
     pop.plotly_result(plot_id="sim_and_frontier", with_labels=False)
-    pop.plt.write_html(".plotly/10.html", include_plotlyjs="directory")
+    pop.plt.write_html(".plots/plotly/10.html", include_plotlyjs="directory")

@@ -32,8 +32,7 @@ def test_quick_plot(real_ef):
     assert f is not None
 
 
-
-# @pytest.mark.work
+@pytest.mark.work
 @pytest.mark.simu
 def test_frontier(real_ef):
     ef = real_ef
@@ -46,3 +45,4 @@ def test_frontier(real_ef):
     f = Path(fn).resolve()
     assert f is not None
 
+    assert False

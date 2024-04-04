@@ -5,6 +5,7 @@ from datetime import datetime as dt, timedelta as td
 
 import pandas as pd
 import numpy as np
+from numpy.random import default_rng
 
 
 py_files = Path(__file__).parent.parent / "src-tauri" / "py-app"
@@ -88,3 +89,15 @@ def simulated_real_ef(real_ef):
     real_ef.run_simulation()
     real_ef.get_efficient_frontier(from_max_risk=False, from_min_ret=True)
     return real_ef
+
+@pytest.fixture
+def get_square():
+    n = np.array([str(e) for e in range(0, 4)], dtype=str)
+    return n, np.array([[1, 1], [2, 1], [2, 2], [1, 2]])
+
+@pytest.fixture
+def get_random():
+    gen = default_rng()
+    arr = gen.normal(1.5, 0.20, (900, 2))
+    return arr
+

@@ -33,6 +33,4 @@ package-lock.json
 **/.dump
 **/.logs
 **/.plots
-**/.plotly
-**/.ef_plots
 **/*.xlsx

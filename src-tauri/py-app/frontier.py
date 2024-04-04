@@ -3,7 +3,6 @@ from io import StringIO
 import yfinance
 
 import pandas as pd, numpy as np
-from scipy.interpolate import interp1d
 from scipy.optimize import shgo
 
 # minimize, LinearConstraint,
@@ -12,7 +11,8 @@ import matplotlib.pyplot as plt
 
 import weights as w
 import formulas as f
-from plot import PortPlot
+from plot import PortPlot, arrow
+from hull import scipy_convex_hull, custom_convex_hull
 
 
 class EfficientFrontier:
@@ -172,7 +172,9 @@ class EfficientFrontier:
         f_ret = (self.frontier.get(self.COL_P_RET, None)).values
         return self.plot_engine(n, ris, ret, s_ris, s_ret, f_ris, f_ret)
 
-    def get_plot_collection(self, engine="plotly", write_disk=False, **kwargs):
+    def get_plot_collection(
+        self, engine=("plotly", "html"), write_disk=False, **kwargs
+    ):
         plot_obj = self._init_plot_object()
         # TODO better parsing of dir, and labels
         # TODO handle with_labels=False
@@ -182,7 +184,7 @@ class EfficientFrontier:
             engine=engine, semantic_save=save_dir, **kwargs
         )
 
-    def _quick_plot(self, op_name="plot.png"):
+    def _quick_plot(self, op_name="plot.png", plot_arrows=False):
         fig, ax = plt.subplots(figsize=self.FIGSIZE)
         for k, r, ar in zip(
             self.stocks_annual_risk,
@@ -199,75 +201,93 @@ class EfficientFrontier:
             )
 
         if self.frontier is not None:
-            ax.plot(
-                self.frontier[self.COL_P_RISK], self.frontier[self.COL_P_RET], c="red"
-            )
+            fx, fy = self.frontier[self.COL_P_RISK], self.frontier[self.COL_P_RET]
+            ax.plot(fx, fy, c="red")
+            if plot_arrows:
+                arrow(fx.values, fy.values, ax)
 
         fig.savefig(op_name)
 
     # ------------------------------------------------------------------------------------------
 
-    def get_efficient_frontier(self, from_max_risk=False, from_min_ret=False):
-        # Consideration for portfolio efficient frontier: Porfolio Return must increase with porfolio risk
-        def get_points(result, ascending, from_min_ret=False):
-            if not from_min_ret:
-                sortby = [self.COL_P_RISK, self.COL_P_RET]
-            else:
-                sortby = [self.COL_P_RET, self.COL_P_RISK]
-            sort_val = result.sort_values(by=sortby, ascending=ascending)
-            # As Porfolio Return must increase with porfolio risk, filter out points where this is not true
-            while True:
-                prev_length = sort_val.shape[0]
-                if not from_min_ret:
-                    sort_val["flags"] = np.sign(
-                        sort_val[self.COL_P_RET] - sort_val[self.COL_P_RET].shift(1)
-                    )
-                else:
-                    sort_val["flags"] = -np.sign(
-                        sort_val[self.COL_P_RISK] - sort_val[self.COL_P_RISK].shift(1)
-                    )
+    def _get_convex_hull(self):
+        sim_x = self.sim_result[self.COL_P_RISK].values
+        sim_y = self.sim_result[self.COL_P_RET].values
+        hullx, hully = scipy_convex_hull(sim_x, sim_y)
 
-                sort_val["flags"] = sort_val["flags"].fillna(1)
-                sort_val = sort_val[sort_val["flags"] == 1]
-                if prev_length == sort_val.shape[0]:
-                    break
-            return sort_val
+        self.frontier = pd.DataFrame({self.COL_P_RISK: hullx, self.COL_P_RET: hully})
+
+    def get_efficient_frontier(self, from_max_risk=False, from_min_ret=False):
+        self._get_convex_hull()
+        # self._OLD_efficient_frontier(from_max_risk, from_min_ret)
+
+    def _OLD_efficient_frontier(self, from_max_risk=False, from_min_ret=False):
+        self.frontier, self.frontier_top = custom_convex_hull(
+            self.sim_result,
+            self.COL_P_RISK,
+            self.COL_P_RET,
+            from_max_risk,
+            from_min_ret,
+        )
+
+        # Consideration for portfolio efficient frontier: Porfolio Return must increase with porfolio risk
+
+        # def get_points(result, ascending, from_min_ret=False):
+        #     if not from_min_ret:
+        #         sortby = [self.COL_P_RISK, self.COL_P_RET]
+        #     else:
+        #         sortby = [self.COL_P_RET, self.COL_P_RISK]
+        #     sort_val = result.sort_values(by=sortby, ascending=ascending)
+        #     # As Porfolio Return must increase with porfolio risk, filter out points where this is not true
+        #     while True:
+        #         prev_length = sort_val.shape[0]
+        #         if not from_min_ret:
+        #             sort_val["flags"] = np.sign(
+        #                 sort_val[self.COL_P_RET] - sort_val[self.COL_P_RET].shift(1)
+        #             )
+        #         else:
+        #             sort_val["flags"] = -np.sign(
+        #                 sort_val[self.COL_P_RISK] - sort_val[self.COL_P_RISK].shift(1)
+        #             )
+
+        #         sort_val["flags"] = sort_val["flags"].fillna(1)
+        #         sort_val = sort_val[sort_val["flags"] == 1]
+        #         if prev_length == sort_val.shape[0]:
+        #             break
+        #     return sort_val
 
         # Generate efficient frontier function by interpolation of points
-        def get_interpo_func_range(series_x, series_y):
-            range_risk = np.linspace(min(series_x), max(series_x), 1000)
-            return range_risk, interp1d(series_x, series_y, kind="linear")
 
-        frontier = get_points(self.sim_result, ascending=True)
-        if from_max_risk:
-            pts_from_max_risk = get_points(
-                self.sim_result, ascending=False, from_min_ret=from_min_ret
-            )
-            frontier = pd.concat([frontier, pts_from_max_risk])
-        range, func_top = get_interpo_func_range(
-            frontier[self.COL_P_RISK], frontier[self.COL_P_RET]
-        )
-        self.frontier = pd.DataFrame(
-            {self.COL_P_RISK: range, self.COL_P_RET: func_top(range)}
-        )
-        self.frontier_top = pd.DataFrame(
-            {self.COL_P_RISK: range, self.COL_P_RET: func_top(range)}
-        )
+        # frontier = sort_simulation_points(self.sim_result, risk_label=self.COL_P_RISK, ret_label=self.COL_P_RET, ascending=True)
+        # if from_max_risk:
+        #     pts_from_max_risk = sort_simulation_points(
+        #         self.sim_result, risk_label=self.COL_P_RISK, ret_label=self.COL_P_RET, ascending=False, from_min_ret=from_min_ret
+        #     )
+        #     frontier = pd.concat([frontier, pts_from_max_risk])
+        # range, func_top = get_interpo_func_range(
+        #     frontier[self.COL_P_RISK], frontier[self.COL_P_RET]
+        # )
+        # self.frontier = pd.DataFrame(
+        #     {self.COL_P_RISK: range, self.COL_P_RET: func_top(range)}
+        # )
+        # self.frontier_top = pd.DataFrame(
+        #     {self.COL_P_RISK: range, self.COL_P_RET: func_top(range)}
+        # )
 
-        if from_min_ret:
-            pts_from_min_ret = get_points(
-                self.sim_result, ascending=[True, False], from_min_ret=from_min_ret
-            )
-            frontier_btm = pd.concat([pts_from_min_ret])
-            range, func_btm = get_interpo_func_range(
-                frontier_btm[self.COL_P_RISK], frontier_btm[self.COL_P_RET]
-            )
-            frontier_btm = pd.DataFrame(
-                {self.COL_P_RISK: range, self.COL_P_RET: func_btm(range)}
-            )
-            self.frontier = pd.concat(
-                [frontier_btm, self.frontier], axis=0
-            ).sort_values(self.COL_P_RET)
+        # if from_min_ret:
+        #     pts_from_min_ret = sort_simulation_points(
+        #         self.sim_result, ascending=[True, False], from_min_ret=from_min_ret
+        #     )
+        #     frontier_btm = pd.concat([pts_from_min_ret])
+        #     range, func_btm = get_interpo_func_range(
+        #         frontier_btm[self.COL_P_RISK], frontier_btm[self.COL_P_RET]
+        #     )
+        #     frontier_btm = pd.DataFrame(
+        #         {self.COL_P_RISK: range, self.COL_P_RET: func_btm(range)}
+        #     )
+        #     self.frontier = pd.concat(
+        #         [frontier_btm, self.frontier], axis=0
+        #     ).sort_values(self.COL_P_RET)
 
     # ------------------------------------------------------------------------------------------
 
