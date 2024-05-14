@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "PortfolioApp"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+packages = [
+    { include = "py-app" },
+    { include = "PortOpt", from = "py-app" },
+    { include = "Server", from = "py-app" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+Flask = "^3.0.3"
+pandas = "^2.2.2"
+numpy = "^1.26.4"
+matplotlib = "^3.8.4"
+yfinance = "^0.2.38"
+plotly = "^5.22.0"
+scipy = "^1.13.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+flask = "py-app.flask:main"
+test = "tests.test_main:test"
+work = "tests.test_envs:main"

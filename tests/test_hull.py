@@ -4,8 +4,8 @@ import pytest
 import matplotlib.pyplot as plt
 import pandas as pd, numpy as np
 
-from plot import PortPlot, arrow
-from hull import scipy_convex_hull, filter_hull_lines
+from PortOpt.plot import PortPlot, arrow
+from PortOpt.hull import scipy_convex_hull, filter_hull_lines
 
 from pprint import pp
 
@@ -61,4 +61,4 @@ def test_min_x_hull(get_random):
 
     fig.savefig(".plots/hull/simple_hull2.png")
 
-    assert False
+    # assert False

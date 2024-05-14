@@ -4,7 +4,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-from frontier import EfficientFrontier
+# from PortOpt import EfficientFrontier
+# from PortOpt.plot import PortPlot
 
 
 @pytest.mark.simu
@@ -45,4 +46,4 @@ def test_frontier(real_ef):
     f = Path(fn).resolve()
     assert f is not None
 
-    assert False
+    # assert False

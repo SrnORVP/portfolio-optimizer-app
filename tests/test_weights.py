@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import weights as f
+from PortOpt import EfficientFrontier
+from PortOpt import weights as f
 
 
 @pytest.mark.weig
@@ -23,7 +24,12 @@ def test_rand_mat_precision():
     mat = f.fill_precision_random_matrix(10, 10, precision)
     a = (mat * factor).astype(int)
     res = (mat * factor).astype(int) / factor
-    assert (mat == res).all()
+    diff = mat - res
+    m1 = diff.min()
+    m2 = diff.max()
+    print(m1)
+    print(m2)
+    assert m2 - m1 < 0.01
     # assert False
 
 

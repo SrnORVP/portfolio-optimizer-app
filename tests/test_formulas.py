@@ -3,7 +3,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import formulas as f
+from PortOpt import EfficientFrontier
+import PortOpt.formulas as f
 
 def test_pct():
     a = np.array([1, 1.1, 1])

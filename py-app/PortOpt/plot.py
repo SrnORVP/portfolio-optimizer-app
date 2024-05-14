@@ -240,7 +240,9 @@ class PortPlot:
                     case "html":
                         for k, v in ret_coll.items():
                             self._collection[k] = v.to_html(
-                                include_plotlyjs="directory"
+                                include_plotlyjs="cdn",
+                                full_html=False,
+                                # include_plotlyjs="directory"
                             )
                     case "png":
                         raise NotImplementedError

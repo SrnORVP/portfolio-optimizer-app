@@ -11,8 +11,8 @@ from numpy.random import default_rng
 py_files = Path(__file__).parent.parent / "src-tauri" / "py-app"
 path.insert(0, str(py_files))
 
-from frontier import EfficientFrontier
-from plot import PortPlot
+from PortOpt import EfficientFrontier
+from PortOpt.plot import PortPlot
 
 
 @pytest.fixture

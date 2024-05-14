@@ -1,9 +1,10 @@
 import pytest
 
 import pandas as pd, numpy as np
-from plot import PortPlot
-
 from pprint import pp
+
+from PortOpt import EfficientFrontier
+from PortOpt.plot import PortPlot
 
 
 @pytest.mark.plot

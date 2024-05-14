@@ -10,6 +10,7 @@ package-lock.json
 # Python
 **/.pytest_cache
 **/__pycache__
+**/.venv
 
 # Rust
 **/target
@@ -28,9 +29,3 @@ package-lock.json
 .prettierignore
 .*rc*
 
-# Custom
-**/.archive
-**/.dump
-**/.logs
-**/.plots
-**/*.xlsx

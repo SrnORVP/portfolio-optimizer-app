@@ -1,6 +1,6 @@
 <script>
 	import { invoke } from '@tauri-apps/api/tauri';
-	import { multiLineSVG } from './svg_xml';
+	// import { multiLineSVG } from './svg_xml';
 
     let svg_content = ""
 

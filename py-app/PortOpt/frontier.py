@@ -1,18 +1,16 @@
 from io import StringIO
 
 import yfinance
-
 import pandas as pd, numpy as np
 from scipy.optimize import shgo
 
 # minimize, LinearConstraint,
-
 import matplotlib.pyplot as plt
 
-import weights as w
-import formulas as f
-from plot import PortPlot, arrow
-from hull import scipy_convex_hull, custom_convex_hull
+from PortOpt import weights as w
+from PortOpt import formulas as f
+from PortOpt.plot import PortPlot, arrow
+from PortOpt.hull import scipy_convex_hull, custom_convex_hull
 
 
 class EfficientFrontier:

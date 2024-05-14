@@ -1,4 +1,3 @@
-
 import traceback
 
 try:
@@ -8,12 +7,12 @@ except ImportError as e:
     print(traceback.format_exc())
 
 
-from frontier import EfficientFrontier
+from PortOpt import EfficientFrontier
 
 
 def main(a, b):
     codes = ["GOOG", "AAPL", "MSFT"]
-    format = '%Y-%m-%d'
+    format = "%Y-%m-%d"
 
     start = "2017-03-03"
     end = "2022-03-03"
@@ -26,7 +25,6 @@ def main(a, b):
     ef.get_numpy_repr()
     ef.get_risk_return()
 
-
     ef.generate_portfolio_weights()
     ef.run_simulation()
     ef.get_efficient_frontier(from_max_risk=False, from_min_ret=True)
@@ -35,4 +33,3 @@ def main(a, b):
 
     fn = "test_fig.jpg"
     ef.plt.savefig(fn)
-
