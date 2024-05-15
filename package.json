@@ -25,6 +25,10 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@tauri-apps/api": "^1.5.3"
+		"@svelteuidev/composables": "^0.15.6",
+		"@svelteuidev/core": "^0.15.6",
+		"@svelteuidev/dates": "^0.15.6",
+		"@tauri-apps/api": "^1.5.3",
+		"dayjs": "^1.11.11"
 	}
 }

@@ -60,11 +60,12 @@ class EfficientFrontier:
     def _get_annual_port_risk(cls, corr, std, weights):
         return f.get_annual_port_risk(corr, std, weights, cls.YEARLY_PERIODS)
 
-    def __init__(self, stock_codes, runs_limit=50000, precision=2):
+    def __init__(self, stock_codes=None, runs_limit=50000, precision=2):
         if isinstance(stock_codes, list):
             self.stocks = stock_codes
         else:
-            raise TypeError
+            pass
+            # raise TypeError
 
         if (
             max_len := w.get_len_of_combination(len(stock_codes), precision)

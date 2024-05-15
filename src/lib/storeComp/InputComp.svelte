@@ -40,7 +40,6 @@
 	</label>
 </div>
 
-<br />
 
 <!-- <div>
 	<label for="status">
@@ -49,7 +48,7 @@
 	</label>
 </div> -->
 
-<style>
+<!-- <style>
 	label {
 		color: white;
 		/* margin: 1rem 1rem 1rem 1rem; */
@@ -65,4 +64,4 @@
 	button {
 		height: 2.5rem;
 	}
-</style>
+</style> -->

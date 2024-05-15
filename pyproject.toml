@@ -28,6 +28,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-flask = "py-app.flask:main"
+flask = "py-app.app:main"
 test = "tests.test_main:test"
 work = "tests.test_envs:main"

@@ -1,40 +1,74 @@
 <script>
-	import InputComp from '$lib/storeComp/InputComp.svelte';
-	import SelectComp from '$lib/selectComp.svelte';
-	// import InputCompDefault from '$lib/storeComp/InputCompDefault.svelte';
-	// import RadioComp from '$lib/storeComp/RadioComp.svelte';
-	// import SubmitComp from '$lib/storeComp/SubmitComp.svelte';
-	let stuff = 'yoyoyo';
+	import { Accordion, Space, Tabs, Title } from '@svelteuidev/core';
+
+	import ConfigGroup from './ConfigGroup.svelte';
+	import NewDate from '$lib/NewDate.svelte';
+	import ChartGroup from './ChartGroup.svelte';
+
+	// let overrideStyle = {
+	// 	fontSize: '1.5rem',
+	// 	fontWeight: 200,
+	// 	margin: '1rem 0 1rem 0'
+	// };
+
+	let runValue;
+	let precValue;
+	let stockValue;
+	let startDate;
+	let endDate;
+
+	let overrideStyle = {
+		fontSize: 26,
+		lineHeight: 1.35,
+		margin: '0.75rem 0 0.75rem 0',
+		padding: '0 2rem 0 0'
+	};
+
+	let defAccord = ['config', 'optimize'];
 </script>
 
-<div>
-	<h1>Welcome to My App</h1>
-	<br />
-	<hr />
-</div>
+<Tabs orientation="vertical" tabPadding="xs" variant="default">
+	<Tabs.Tab label="User Inputs" override={overrideStyle}>
+		<Accordion multiple defaultValue={defAccord} chevronPosition="left">
+			<Accordion.Item value="config">
+				<div slot="control">
+					<Title order={3}>Choose operation</Title>
+				</div>
+				<ConfigGroup bind:stockValue bind:runValue bind:precValue bind:startDate bind:endDate />
+			</Accordion.Item>
 
-<div>
-	<h2>Choose operation:</h2>
-	<!-- <InputCompDefault /> -->
-	<!-- <InputComp /> -->
-	<SelectComp />
-	<!-- <RadioComp /> -->
-	<hr />
-</div>
+			<Accordion.Item value="optimize">
+				<div slot="control">
+					<Title order={3}>Optimization</Title>
+				</div>
 
-<div>
-	<!-- <SubmitComp /> -->
-	<hr />
-</div>
+				<div>
+					{stockValue}
+					<br />
+					{runValue}
+					<br />
+					{precValue}
+					<br />
+					{startDate}
+					<br />
+					{endDate}
+					<br />
+				</div>
+				<ChartGroup />
+			</Accordion.Item>
 
-<style>
-	h1 {
-		color: white;
-		text-align: center;
-		margin: 1rem 1rem 0.5rem 1rem;
-	}
-	h2 {
-		color: white;
-		margin: 1rem 1rem 0.5rem 1rem;
-	}
-</style>
+			<Accordion.Item value="submit">
+				<div slot="control">
+					<Title order={3}>Submit for optimization</Title>
+				</div>
+				Submit
+				<!-- <SubmitComp /> -->
+			</Accordion.Item>
+		</Accordion>
+	</Tabs.Tab>
+
+	<Tabs.Tab label="Visualization" override={overrideStyle}>
+		<div slot="control">Choose the chart to display</div>
+		<!-- <SelectComp /> -->
+	</Tabs.Tab>
+</Tabs>

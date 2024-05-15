@@ -25,7 +25,7 @@ def start_app():
 
 def main():
     start_app()
-    import_dep()
+    # import_dep()
 
 
 if __name__ == "__main__":

@@ -1,28 +1,53 @@
 import os
-import time
+from datetime import datetime as dt
 from pathlib import Path
 
 from flask import Flask, send_from_directory, Response, jsonify
+from PortOpt import EfficientFrontier
 
 
 APP = Flask(__name__)
 APP.static_folder = (Path(APP.root_path) / "../../build").resolve(strict=True)
 # print(APP.static_folder)
 
+LOGIC = EfficientFrontier(["", "aa"])
+
 
 class MockCache:
-    def __init__(self) -> None:
-        self._cache = [0]
+    TIME_FORMAT = r"%Y-%m-%d"
+    STATES = [
+        "wait",
+        "run",
+        "plot",
+        "opti",
+        "",
+    ]
 
-    def incr(self, input_string):
-        print(input_string, self._cache[0])
-        self._cache[0] += 1
-        print(input_string, self._cache[0])
-        return self._cache[0]
+    base = {
+        "codes": ["GOOG", "AAPL", "MSFT"],
+        "start": "",
+        "end": dt.now().strftime(TIME_FORMAT),
+        "runs": 50000,
+        "precision": 1,
+        "display_chart": "",
+        "target_risk": "",
+        "state_code": 0
+    }
+
+    def __init__(self) -> None:
+        self._cache = MockCache.base
+
+    def update(self, key, value):
+        self._cache[key] = value
+
+    def read(self, key):
+        return self._cache[key]
+
+    def reset(self, key):
+        self._cache[key] = MockCache.base[key]
 
 
 cache = MockCache()
-
 
 
 @APP.route("/")
@@ -47,8 +72,9 @@ def resp(path):
     return b
 
 
-@APP.route("/abc")
-def abc():
+@APP.route("/run")
+def run_simulation():
+    # TODO get form data
     print("asdfsdafasdfsdfds")
     return jsonify("123")
 
@@ -78,4 +104,3 @@ def get_chart(path):
 
     else:
         return Response(status=400)
-

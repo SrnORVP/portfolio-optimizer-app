@@ -1,42 +1,33 @@
 <script>
-	// import { SvelteUIProvider } from '@svelteuidev/core';
+	import { SvelteUIProvider, AppShell, Stack, Header, Divider } from '@svelteuidev/core';
+
+	import NavGroup from './NavGroup.svelte';
+
+	let isDark = false;
+	let opened = false;
+
+	function toggleTheme() {
+		isDark = !isDark;
+	}
+	function toggleOpened() {
+		opened = !opened;
+	}
 </script>
 
-<!-- <SvelteUIProvider withNormalizeCSS withGlobalStyles themeObserver="dark"> -->
-	<nav>
-		<ul>
-			<li><a href="/">Home</a></li>
-			<li><a href="/about">About</a></li>
-			<li><a href="/chart">Chart</a></li>
-		</ul>
-		<br />
-	</nav>
-	<slot />
-<!-- </SvelteUIProvider> -->
+<SvelteUIProvider withNormalizeCSS withGlobalStyles themeObserver="dark">
+	<div class="flex">
+		<AppShell>
+			<Stack spacing="xl">
+				<NavGroup />
+				<slot />
+			</Stack>
+		</AppShell>
+	</div>
+</SvelteUIProvider>
 
 <style>
-	nav ul {
-		list-style-type: none;
-		margin: 0;
-		padding: 0;
-		overflow: hidden;
-		background-color: #000000;
-	}
-
-	nav li {
-		float: left;
-	}
-
-	nav li a {
-		display: block;
-		color: white;
-		text-align: center;
-		padding: 14px 16px;
-		text-decoration: none;
-	}
-
-	/* Change the link color to #111 (black) on hover */
-	nav li a:hover {
-		background-color: #111;
+	.flex {
+		margin: 5rem 5% 0;
+		/* margin-top: 10rem; */
 	}
 </style>
