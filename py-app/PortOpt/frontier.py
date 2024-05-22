@@ -171,16 +171,21 @@ class EfficientFrontier:
         f_ret = (self.frontier.get(self.COL_P_RET, None)).values
         return self.plot_engine(n, ris, ret, s_ris, s_ret, f_ris, f_ret)
 
-    def get_plot_collection(
-        self, engine=("plotly", "html"), write_disk=False, **kwargs
+    def plot_engine_plots_list(self):
+        plot_obj = self._init_plot_object()
+        return plot_obj.plots_list
+
+    def gen_plot_collection(
+        self, engine=("plotly", "html"), write_disk=False, cases=None, **kwargs
     ):
         plot_obj = self._init_plot_object()
+
         # TODO better parsing of dir, and labels
         # TODO handle with_labels=False
         save_dir = write_disk
 
         self.plot_collection = plot_obj.plot_collecton(
-            engine=engine, semantic_save=save_dir, **kwargs
+            cases, engine=engine, semantic_save=save_dir, **kwargs
         )
 
     def _quick_plot(self, op_name="plot.png", plot_arrows=False):

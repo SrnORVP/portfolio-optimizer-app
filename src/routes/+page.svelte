@@ -1,9 +1,13 @@
 <script>
-	import { Accordion, Space, Tabs, Title } from '@svelteuidev/core';
+	import { Accordion, Button, Group, Tabs, Title } from '@svelteuidev/core';
+	import { afterUpdate, onMount, tick } from 'svelte';
 
-	import ConfigGroup from './ConfigGroup.svelte';
-	import NewDate from '$lib/NewDate.svelte';
-	import ChartGroup from './ChartGroup.svelte';
+	import ConfigGroup from '$lib/Groups/Config.svelte';
+	import ChartsGroup from '$lib/Groups/Charts.svelte';
+	import ReviewGroup from '$lib/Groups/Review.svelte';
+
+	import { getFetch, postFetch } from '$lib/fetchHandler';
+	import InputComp from '$lib/Comps/Input2.svelte';
 
 	// let overrideStyle = {
 	// 	fontSize: '1.5rem',
@@ -11,11 +15,35 @@
 	// 	margin: '1rem 0 1rem 0'
 	// };
 
+	let stockValue;
 	let runValue;
 	let precValue;
-	let stockValue;
 	let startDate;
 	let endDate;
+	let chartNames;
+	let chartSelected;
+	let chartContent;
+	let riskTarget;
+	let messages;
+
+	async function getDefaultStates() {
+		await getFetch().then((appState) => resolveDefaultStates(appState));
+	}
+	onMount(getDefaultStates);
+
+	async function resolveDefaultStates(appState) {
+		console.log('after', appState);
+		stockValue = appState.codes;
+		runValue = appState.runs;
+		precValue = appState.precision;
+		startDate = appState.start;
+		endDate = appState.end;
+		chartNames = appState.charts;
+		chartSelected = appState.chart;
+		chartContent = appState.html;
+		riskTarget = appState.target;
+		messages = appState.messages;
+	}
 
 	let overrideStyle = {
 		fontSize: 26,
@@ -32,34 +60,29 @@
 		<Accordion multiple defaultValue={defAccord} chevronPosition="left">
 			<Accordion.Item value="config">
 				<div slot="control">
-					<Title order={3}>Choose operation</Title>
+					<Title order={3}>Choose Parameters</Title>
 				</div>
 				<ConfigGroup bind:stockValue bind:runValue bind:precValue bind:startDate bind:endDate />
 			</Accordion.Item>
 
 			<Accordion.Item value="optimize">
 				<div slot="control">
-					<Title order={3}>Optimization</Title>
+					<Title order={3}>Selected Parameters</Title>
 				</div>
-
-				<div>
-					{stockValue}
-					<br />
-					{runValue}
-					<br />
-					{precValue}
-					<br />
-					{startDate}
-					<br />
-					{endDate}
-					<br />
-				</div>
-				<ChartGroup />
+				<ReviewGroup
+					bind:stockValue
+					bind:runValue
+					bind:precValue
+					bind:startDate
+					bind:endDate
+					bind:chartNames
+					bind:messages
+				/>
 			</Accordion.Item>
 
 			<Accordion.Item value="submit">
 				<div slot="control">
-					<Title order={3}>Submit for optimization</Title>
+					<Title order={3}>Optimization</Title>
 				</div>
 				Submit
 				<!-- <SubmitComp /> -->
@@ -67,8 +90,11 @@
 		</Accordion>
 	</Tabs.Tab>
 
-	<Tabs.Tab label="Visualization" override={overrideStyle}>
+	<Tabs.Tab label="Visualization" override={overrideStyle} on:click>
 		<div slot="control">Choose the chart to display</div>
-		<!-- <SelectComp /> -->
+		<ChartsGroup bind:chartNames />
 	</Tabs.Tab>
 </Tabs>
+
+<!-- bind:noticeMsg
+bind:errorMsg -->

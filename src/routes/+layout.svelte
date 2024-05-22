@@ -1,7 +1,7 @@
 <script>
 	import { SvelteUIProvider, AppShell, Stack, Header, Divider } from '@svelteuidev/core';
 
-	import NavGroup from './NavGroup.svelte';
+	import NavGroup from '$lib/Groups/Nav.svelte';
 
 	let isDark = false;
 	let opened = false;

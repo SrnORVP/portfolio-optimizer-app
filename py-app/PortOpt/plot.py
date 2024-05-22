@@ -90,6 +90,10 @@ class PortPlot:
         self._check_plot_possibility(*args)
         self._bind_id_with_plot_xy(*args)
 
+    @property
+    def plots_list(self):
+        return [k for k, v in self._possible_plots.items() if v]
+
     def _check_plot_possibility(self, n, ris, ret, s_ris, s_ret, f_ris, f_ret):
         self._stocks = (n, ris, ret)
         match self._has_value:
@@ -202,7 +206,7 @@ class PortPlot:
         self.plt = fig
         self.ax = ax
 
-    def plotly_result(self, plot_id="stock", with_labels=True):
+    def plotly_result(self, plot_id="stock", with_labels=True, **kwargs):
         self._check_plot_possible(plot_id)
 
         x_all, y_all = self._all_x(plot_id), self._all_y(plot_id)
@@ -225,15 +229,25 @@ class PortPlot:
 
         self.plt = fig
 
-    def plot_collecton(self, engine=("plotly", "html"), semantic_save=False, **kwargs):
-        cases = [k for k, v in self._possible_plots.items() if v]
+    def plot_collecton(
+        self,
+        cases=None,
+        engine=("plotly", "html"),
+        semantic_save=False,
+        **kwargs,
+    ):
+        cases = self.plots_list if cases is None else cases
+        print(cases)
+        # [k for k, v in self._possible_plots.items() if v]
         ret_coll = dict()
         eng, res = engine
 
         match eng:
             case "plotly":
+                p = {"with_labels": kwargs.pop("with_labels")}
                 for e in cases:
-                    self.plotly_result(plot_id=e, **kwargs)
+                    print(e)
+                    self.plotly_result(plot_id=e, **p, **kwargs)
                     ret_coll[e] = deepcopy(self.plt)
 
                 match res:
@@ -241,7 +255,10 @@ class PortPlot:
                         for k, v in ret_coll.items():
                             self._collection[k] = v.to_html(
                                 include_plotlyjs="cdn",
-                                full_html=False,
+                                full_html=True,
+                                **kwargs,
+                                # default_width=html_width,
+                                # default_height=html_height,
                                 # include_plotlyjs="directory"
                             )
                     case "png":
@@ -275,5 +292,8 @@ class PortPlot:
                     for k, v in self._collection.items():
                         with open(dir_name / f"{k}.html", "w") as fp:
                             fp.write(v)
+                case "png":
+                    raise NotImplementedError
+            return [*self._collection.keys()]
         else:
             return self._collection

@@ -1,37 +1,60 @@
 import os
 from datetime import datetime as dt
+from datetime import timedelta as td
 from pathlib import Path
 
-from flask import Flask, send_from_directory, Response, jsonify
+from Server.parse import ParseInput
+from flask import Flask, request, send_from_directory, Response, Request, jsonify
 from PortOpt import EfficientFrontier
+from pydantic import ValidationError
 
+
+global EF_ENGINE
+global cache
 
 APP = Flask(__name__)
 APP.static_folder = (Path(APP.root_path) / "../../build").resolve(strict=True)
+DATAPATH = (Path(APP.root_path) / "../../.data").resolve(strict=True)
 # print(APP.static_folder)
-
-LOGIC = EfficientFrontier(["", "aa"])
 
 
 class MockCache:
+    RESTRICTED_MODE = True
     TIME_FORMAT = r"%Y-%m-%d"
-    STATES = [
-        "wait",
-        "run",
-        "plot",
-        "opti",
-        "",
-    ]
+    ERROR_STATE = "ERROR"
+    STATES = {
+        "w": "wait",
+        "c": "check",
+        "r": "run",
+        "p": "plot",
+        "o": "opti",
+        "e": ERROR_STATE,
+    }
 
     base = {
-        "codes": ["GOOG", "AAPL", "MSFT"],
-        "start": "",
+        "state": "w",
+        "codes": "GOOG, AAPL, MSFT",
+        "start": (dt.now() - td(days=100)).strftime(TIME_FORMAT),
         "end": dt.now().strftime(TIME_FORMAT),
-        "runs": 50000,
+        "runs": 1000,
         "precision": 1,
-        "display_chart": "",
-        "target_risk": "",
-        "state_code": 0
+        "chart": "",
+        "charts": "",
+        "html": "",
+        "fwidth": "",
+        "fheight": "",
+        "target": "",
+        "messages": "",
+    }
+
+    readable = {
+        "codes": "stock codes",
+        "start": "start date",
+        "end": "end date",
+        "runs": "number of monte carlo runs",
+        "precision": "model precisions",
+        "ratio": "Model representativeness",
+        "restricted": "server restriction",
     }
 
     def __init__(self) -> None:
@@ -40,14 +63,63 @@ class MockCache:
     def update(self, key, value):
         self._cache[key] = value
 
+    def dict_update(self, d):
+        for k, v in d.items():
+            self.update(k, v)
+
     def read(self, key):
         return self._cache[key]
 
     def reset(self, key):
         self._cache[key] = MockCache.base[key]
 
+    @property
+    def content(self):
+        return self._cache
+
+    def get_state(self):
+        return self.STATES[self._cache["state"]]
+
+    def reset_state(self):
+        self._cache["state"] = "w"
+
+    def __repr__(self) -> str:
+        def render_each(element):
+            try:
+                return f"longer than {len(element)}" if len(element) > 50 else element
+            except TypeError:
+                return element
+
+        return ", ".join([f"({k}: {render_each(v)})" for k, v in self._cache.items()])
+
+    def feedback_on_input(self):
+        msg = {
+            k: (self.readable[k], f"Value of '{v}' is accepted.", False)
+            for k, v in self.content.items()
+            if k in self.readable
+        }
+
+        try:
+            ParseInput(**self.content, restricted=self.RESTRICTED_MODE)
+        except ValidationError as error:
+            err = {
+                e["loc"][0]: (self.readable[e["loc"][0]], e["msg"], True)
+                for e in error.errors()
+            }
+            msg.update(**err)
+            self._cache["state"] = "e"
+
+        return [
+            {"display": display, "explain": explain, "err": err}
+            for display, explain, err in msg.values()
+        ]
+
 
 cache = MockCache()
+
+
+#############################################################################
+# Serve static html as build with sevltekit/vite
 
 
 @APP.route("/")
@@ -62,8 +134,8 @@ def icon():
 
 @APP.route("/_app/<path:path>")
 def resp(path):
-    abspath = APP.static_folder + "/_app/" + path
-    abspath = Path(abspath).resolve(strict=True)
+    # abspath = APP.static_folder + "/_app/" + path
+    # abspath = Path(abspath).resolve(strict=True)
     # a = send_file(abspath)
     # print(abspath)
 
@@ -72,35 +144,97 @@ def resp(path):
     return b
 
 
-@APP.route("/run")
-def run_simulation():
-    # TODO get form data
-    print("asdfsdafasdfsdfds")
-    return jsonify("123")
+#############################################################################
+# hydrate content as needed by state
+# ensure compability with Tauri need to change request.get_json()
+# so the code receive json string directly
 
 
-@APP.route("/chartList")
-def chart_list():
-    dp = (Path(APP.root_path) / "../../data").resolve(strict=True)
-    lst = [str(e.stem) for e in dp.iterdir()]
-    # lst = [e for e in range(10)]
-    return jsonify(lst)
+@APP.route("/post/state", methods=["POST"])
+def handle_post():
+    global cache
+
+    j = request.get_json()
+    cache.dict_update(j)
+    # content = cache.content
+    print("rece resq", cache)
+    match cache.get_state():
+        case "check":
+            cache = check(cache)
+        case "run":
+            cache = check(cache)
+            if cache.get_state() != MockCache.ERROR_STATE:
+                cache = run(cache)
+        case "plot":
+            cache = serve_chart(cache)
+        case "opti":
+            print("opti")
+    cache.reset_state()
+    print("send resp", cache)
+    return jsonify(cache.content)
 
 
-@APP.route("/charts/<path:path>")
-def get_chart(path):
-    # print("getting charts")
-    dp = (Path(APP.root_path) / "../../data").resolve(strict=True)
-    pattern = path + ".*"
+@APP.route("/get/state", methods=["GET"])
+def handle_get():
+    return jsonify(cache.content)
 
-    if path == "plotly.min.js":
-        # print(path)
-        # print(dp)
-        return send_from_directory(dp, path)
 
-    elif files := [e for e in dp.glob(pattern)]:
-        dp = (Path(APP.root_path) / "../../data").resolve(strict=True)
-        return send_from_directory(dp, files[0].name)
+#############################################################################
 
-    else:
-        return Response(status=400)
+
+def check(cache):
+    msg = cache.feedback_on_input()
+    cache.update("messages", msg)
+    return cache
+
+
+def run(cache):
+    content = cache.content
+
+    global EF_ENGINE
+    EF_ENGINE = EfficientFrontier(
+        content["codes"], int(content["runs"]), int(content["precision"])
+    )
+    EF_ENGINE.raw_df = EF_ENGINE.download_stock_data(
+        content["codes"], content["start"], content["end"]
+    )
+    EF_ENGINE.get_numpy_repr()
+    EF_ENGINE.get_risk_return()
+    EF_ENGINE.generate_portfolio_weights()
+    EF_ENGINE.run_simulation()
+    EF_ENGINE.get_efficient_frontier(from_max_risk=False, from_min_ret=True)
+    plot_list = EF_ENGINE.plot_engine_plots_list()
+
+    cache.update("charts", plot_list)
+    return cache
+
+
+def serve_chart(cache):
+    SCALE = 0.985
+
+    content = cache.content
+
+    global EF_ENGINE
+    plot_only = content["chart"]
+    EF_ENGINE.gen_plot_collection(
+        # write_disk=DATAPATH,
+        with_labels=False,
+        cases=[plot_only],
+        default_width=content["fwidth"] * SCALE,
+        default_height=content["fheight"] * SCALE,
+    )
+    cache.update("html", EF_ENGINE.plot_collection[plot_only])
+    return cache
+
+    # pat = content["chart"] + ".html"
+    # if files := [e for e in DATAPATH.glob(pat)]:
+    #     with open(files[0], "r") as f:
+    #         html_string = f.read()
+    #     return "html", html_string
+    # else:
+    #     return "html", "Selected chart is not found"
+
+    # if path == "plotly.min.js":
+    #     # print(path)
+    #     # print(dp)
+    #     return send_from_directory(dp, path)

@@ -1,5 +1,6 @@
 <script>
 	import { NumberInput, InputWrapper } from '@svelteuidev/core';
+
 	export let value;
 	export let display;
 	export let valMin;
@@ -21,7 +22,7 @@
 	description={`Restricted to ${formatLargeNumber(valMin)} and ${formatLargeNumber(valMax)} on website`}
 >
 	<NumberInput
-		{value}
+		bind:value
 		on:change={onChange}
 		step={stepInc}
 		min={valMin}

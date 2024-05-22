@@ -18,6 +18,7 @@ matplotlib = "^3.8.4"
 yfinance = "^0.2.38"
 plotly = "^5.22.0"
 scipy = "^1.13.0"
+pydantic = "^2.7.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -29,5 +30,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 flask = "py-app.app:main"
-test = "tests.test_main:test"
+main = "py-app.main:main"
+parse = "Server.parse:main"
 work = "tests.test_envs:main"

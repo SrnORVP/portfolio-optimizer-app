@@ -1,7 +1,7 @@
 <script>
 	import { ActionIcon, Group, Stack, NumberInput, InputWrapper, Grid } from '@svelteuidev/core';
 
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import dayjs from 'dayjs';
 
 	// use locale
@@ -11,11 +11,18 @@
 	export let value;
 	export let display;
 
-	const arrDays = [...Array(7).keys()].map((x) => dayjs().day(x).format('dd'));
+	let arrDays;
+	try {
+		arrDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+		// [...Array(7).keys()].map((x) => dayjs().day(x).format('dd'));
+		// console.log(arrDays);
+	} catch ({ e, m }) {
+		console.log(e, m);
+	}
 
-	let selDay = +dayjs().format('D'); // 1..31
-	let selMonth = +dayjs().format('M'); // 1..12
-	let selYear = +dayjs().format('YYYY'); // year
+	let selDay = +dayjs(value).format('D'); // 1..31
+	let selMonth = +dayjs(value).format('M'); // 1..12
+	let selYear = +dayjs(value).format('YYYY'); // year
 	let calMat = initCalMat();
 
 	onMount(() => {
@@ -132,20 +139,5 @@
 				{/each}
 			{/each}
 		</Grid>
-
-		<!-- <SimpleGrid cols={7} spacing={1}>
-		{#each arrDays as day}
-			<ActionIcon>{day}</ActionIcon>
-		{/each}
-		{#each calMat as col}
-			{#each col as i}
-				{#if i > 0}
-					<ActionIcon variant="hover" on:click={selectDate(selYear, selMonth, i)}>{i}</ActionIcon>
-				{:else}
-					<div />
-				{/if}
-			{/each}
-		{/each}
-	</SimpleGrid> -->
 	</Stack>
 </InputWrapper>

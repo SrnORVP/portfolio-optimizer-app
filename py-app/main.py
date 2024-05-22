@@ -1,4 +1,6 @@
 import traceback
+from datetime import datetime as dt
+from datetime import timedelta as td
 
 try:
     import pandas as pd
@@ -10,7 +12,12 @@ except ImportError as e:
 from PortOpt import EfficientFrontier
 
 
-def main(a, b):
+def dev_trials():
+    b = dt.now() - td(days=100)
+    print(b)
+
+
+def ef():
     codes = ["GOOG", "AAPL", "MSFT"]
     format = "%Y-%m-%d"
 
@@ -29,7 +36,11 @@ def main(a, b):
     ef.run_simulation()
     ef.get_efficient_frontier(from_max_risk=False, from_min_ret=True)
 
-    ef.plot_result(with_result=True, with_frontier=True)
+    ef.gen_plot_collection(write_disk=".ef_plots", with_labels=False)
 
     fn = "test_fig.jpg"
     ef.plt.savefig(fn)
+
+
+def main():
+    dev_trials()

@@ -4,7 +4,6 @@
     $: chartPromise = (async function loadChart(inputParam) {
         const res = await fetch(`/111`).then((e) => e.text());
         // const res = await fetch(`/charts/${inputParam}`).then((e) => e.text());
-        // console.debug(res)
         return res;
     })(selected);
 
