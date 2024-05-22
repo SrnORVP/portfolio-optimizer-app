@@ -13,7 +13,7 @@
 	let frameWidth;
 
 	$: chartNames, updateSelections();
-	$: chartSelected, postChartState();
+	$: chartSelected, postPlotState();
 
 	async function getChartState() {
 		const resp = await getFetch();
@@ -28,10 +28,10 @@
 		}
 	}
 
-	async function postChartState() {
+	async function postPlotState() {
 		if (!!chartSelected) {
 			let data = {
-				state: 2,
+				state: "p",
 				chart: chartSelected,
 				fheight: frameHeight,
 				fwidth: frameWidth
