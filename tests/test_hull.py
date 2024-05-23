@@ -10,7 +10,6 @@ from PortOpt.hull import scipy_convex_hull, filter_hull_lines
 from pprint import pp
 
 
-@pytest.mark.work
 @pytest.mark.hull
 def test_hull(get_square, get_random):
     n, arr = get_square
@@ -29,7 +28,6 @@ def test_hull(get_square, get_random):
     assert np.min(sim[:, 1]) == np.min(res_y)
 
 
-# @pytest.mark.work
 @pytest.mark.hull
 def test_min_x_hull(get_random):
     sim = get_random

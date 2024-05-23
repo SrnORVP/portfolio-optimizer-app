@@ -1,9 +1,9 @@
-from pprint import pp
 from typing import Literal
-from pydantic import BaseModel, Field, PositiveInt, ValidationError, field_validator
-from pydantic_core import PydanticCustomError
 from datetime import datetime
 from datetime import timedelta as td
+
+from pydantic import BaseModel, Field, PositiveInt, ValidationError, field_validator
+from pydantic_core import PydanticCustomError
 
 from PortOpt.weights import get_len_of_combination
 
@@ -22,6 +22,7 @@ class ParseInput(BaseModel):
     end: datetime
     restricted: bool = Field(default=False, validate_default=True)
     ratio: bool = Field(default=True, validate_default=True)
+    date: bool = Field(default=True, validate_default=True)
 
     @field_validator("ratio")
     @classmethod
@@ -60,62 +61,16 @@ class ParseInput(BaseModel):
                 )
         return v
 
-
-def main():
-    try:
-        a = ParseInput(
-            codes="0, 1,2,3,4,5,6,7,8,9,10",
-            runs=500000,
-            precision=1,
-            start="2019-01-xx",
-            end="2019-01-0x",
-        )
-    except ValidationError as e:
-        msg = e.errors()
-        print(msg)
-
-    try:
-        a = ParseInput(
-            codes="0, 1,2,3",
-            runs=10000,
-            precision=2,
-            start="2019-01-01",
-            end="2019-01-01",
-        )
-    except ValidationError as e:
-        msg = e.errors()
-        print(msg)
-
-    try:
-        a = ParseInput(
-            restricted=True,
-            ratio=True,
-            codes="0,1,2,3,4",
-            runs=1000,
-            precision=3,
-            start="2019-01-01",
-            end="2019-01-01",
-        )
-    except ValidationError as e:
-        msg = e.errors()
-        print(msg)
-
-    try:
-        a = ParseInput(
-            restricted=True,
-            ratio=True,
-            codes="0,1,2,3",
-            runs=1000,
-            precision=2,
-            start="2019-01-xx",
-            end="2019-01-01",
-        )
-    except ValidationError as e:
-        msg = e.errors()
-        print(msg)
-
-    # for p in range(1, 4):
-    #     for e in range(3, 20):
-    #         l = get_len_of_combination(e, p)
-    #         if l> 500000:
-    #             print(e, p, l)
+    @field_validator("date")
+    @classmethod
+    def validate_date(cls, v, info):
+        s = info.data.get("start", None)
+        e = info.data.get("end", None)
+        diff = (e - s).days if s and e else 1
+        if v:
+            if diff < 1:
+                raise PydanticCustomError(
+                    "app_restriction",
+                    f"The different between start date and end date are too close at '{diff}' days.",
+                )
+        return v

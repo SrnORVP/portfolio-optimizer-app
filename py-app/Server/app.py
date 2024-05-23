@@ -55,6 +55,7 @@ class MockCache:
         "precision": "model precisions",
         "ratio": "Model representativeness",
         "restricted": "server restriction",
+        "date": "date span",
     }
 
     def __init__(self) -> None:

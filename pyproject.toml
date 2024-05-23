@@ -31,5 +31,21 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 flask = "py-app.app:main"
 main = "py-app.main:main"
-parse = "Server.parse:main"
-work = "tests.test_envs:main"
+test = "tests.main:main"
+
+
+[tool.pytest.ini_options]
+markers = [
+    "main",
+    "data",
+    "simu",
+    "plot",
+    "weig",
+    "hull",
+    "serv",
+    "work: working",
+    "slow: marks tests as slow ",
+    "err_case: for testing exceptions",
+
+]
+# (deselect with '-m "not slow"')

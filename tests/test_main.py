@@ -29,7 +29,7 @@ def test_plotly_simu(simulated_real_ef):
     files = [*Path(plot_dir).glob("*")]
     assert len(files) == 1
 
-    ef.get_plot_collection(write_disk=plot_dir, with_labels=False)
+    ef.gen_plot_collection(write_disk=plot_dir, with_labels=False)
     # ef.get_plot_collection(write_disk=plot_dir, engine=("matplotlib", "html"), with_labels=False)
 
     files = [*Path(plot_dir).glob("*.html")]
@@ -40,5 +40,4 @@ def test_plotly_simu(simulated_real_ef):
 def test_reminder(simulated_real_ef):
     with pytest.raises(NotImplementedError):
         ef = simulated_real_ef
-        ef.get_plot_collection(write_disk=False, with_labels=True)
-
+        ef.gen_plot_collection(write_disk=False, with_labels=True)
