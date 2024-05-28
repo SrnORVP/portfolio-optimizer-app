@@ -18,15 +18,31 @@ def filter_hull_lines(vertices_x, vertrices_y):
     # discount anything that is lower than max ret, with risk higher than that
     # discount if same ret but higher risk
 
+def ensure_clockwise():
+    pass
+
+def get_point_gradient(ptr1, ptr2):
+    pass
 
 def scipy_convex_hull(array_x, array_y, positive_y_hull=False):
     array_input = np.c_[array_x, array_y]
     och = ConvexHull(array_input)
 
     # get x and y pts as facets
-    if positive_y_hull:
+    if not positive_y_hull:
+        # vertices = idx on array_input for the hull's perimeter points 
+        idx = np.r_[och.vertices, och.vertices[0]]
+        hull_x, hull_y = array_x[idx], array_y[idx]
+    else:
+        # facets = idx on array_input for each edge represent the hull
+        # [ptr_T, ptr_T+1], where ptr
         facets = np.c_[och.vertices, np.roll(och.vertices, 1)]
+        print(facets)
+
+        # 3D to 2D
         hull_idx = facets.reshape((-1,))
+        print(hull_idx)
+
         hull_x, hull_y = array_x[hull_idx], array_y[hull_idx]
         hull_x, hull_y = hull_x.reshape((-1, 2)), hull_y.reshape((-1, 2))
 
@@ -42,9 +58,6 @@ def scipy_convex_hull(array_x, array_y, positive_y_hull=False):
         sort_idx = np.argsort(hull_pts[:, 1])
         hull_pts = hull_pts[sort_idx]
         hull_x, hull_y = hull_pts[:, 0], hull_pts[:, 1]
-    else:
-        idx = np.r_[och.vertices, och.vertices[0]]
-        hull_x, hull_y = array_x[idx], array_y[idx]
 
     return hull_x, hull_y
 
@@ -118,3 +131,63 @@ def custom_convex_hull(
         return frontier, None
 
     return frontier, frontier_top
+
+################################################################
+
+        # def get_points(result, ascending, from_min_ret=False):
+        #     if not from_min_ret:
+        #         sortby = [self.COL_P_RISK, self.COL_P_RET]
+        #     else:
+        #         sortby = [self.COL_P_RET, self.COL_P_RISK]
+        #     sort_val = result.sort_values(by=sortby, ascending=ascending)
+        #     while True:
+        #         prev_length = sort_val.shape[0]
+        #         if not from_min_ret:
+        #             sort_val["flags"] = np.sign(
+        #                 sort_val[self.COL_P_RET] - sort_val[self.COL_P_RET].shift(1)
+        #             )
+        #         else:
+        #             sort_val["flags"] = -np.sign(
+        #                 sort_val[self.COL_P_RISK] - sort_val[self.COL_P_RISK].shift(1)
+        #             )
+
+        #         sort_val["flags"] = sort_val["flags"].fillna(1)
+        #         sort_val = sort_val[sort_val["flags"] == 1]
+        #         if prev_length == sort_val.shape[0]:
+        #             break
+        #     return sort_val
+
+
+        # frontier = sort_simulation_points(self.sim_result, risk_label=self.COL_P_RISK, ret_label=self.COL_P_RET, ascending=True)
+        # if from_max_risk:
+        #     pts_from_max_risk = sort_simulation_points(
+        #         self.sim_result, risk_label=self.COL_P_RISK, ret_label=self.COL_P_RET, ascending=False, from_min_ret=from_min_ret
+        #     )
+        #     frontier = pd.concat([frontier, pts_from_max_risk])
+        # range, func_top = get_interpo_func_range(
+        #     frontier[self.COL_P_RISK], frontier[self.COL_P_RET]
+        # )
+        # self.frontier = pd.DataFrame(
+        #     {self.COL_P_RISK: range, self.COL_P_RET: func_top(range)}
+        # )
+        # self.frontier_top = pd.DataFrame(
+        #     {self.COL_P_RISK: range, self.COL_P_RET: func_top(range)}
+        # )
+
+        # if from_min_ret:
+        #     pts_from_min_ret = sort_simulation_points(
+        #         self.sim_result, ascending=[True, False], from_min_ret=from_min_ret
+        #     )
+        #     frontier_btm = pd.concat([pts_from_min_ret])
+        #     range, func_btm = get_interpo_func_range(
+        #         frontier_btm[self.COL_P_RISK], frontier_btm[self.COL_P_RET]
+        #     )
+        #     frontier_btm = pd.DataFrame(
+        #         {self.COL_P_RISK: range, self.COL_P_RET: func_btm(range)}
+        #     )
+        #     self.frontier = pd.concat(
+        #         [frontier_btm, self.frontier], axis=0
+        #     ).sort_values(self.COL_P_RET)
+
+
+
