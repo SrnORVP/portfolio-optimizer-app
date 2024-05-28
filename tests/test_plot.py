@@ -5,6 +5,7 @@ from pprint import pp
 
 from PortOpt import EfficientFrontier
 from PortOpt.plot import PortPlot
+from PortOpt.params import PlotlyParams
 
 
 @pytest.mark.plot
@@ -78,7 +79,6 @@ def test_identify():
 
 
 @pytest.mark.plot
-@pytest.mark.work
 def test_identify_plotly():
     n = np.array([str(e) for e in range(0, 3)])
     x = np.linspace(1, 2, num=3)
@@ -123,3 +123,22 @@ def test_identify_plotly():
 
     pop.plotly_result(plot_id="sim_and_frontier", with_labels=False)
     pop.plt.write_html(".plots/plotly/10.html", include_plotlyjs="directory")
+
+
+@pytest.mark.work
+def test_show_plot():
+    n = np.array([str(e) for e in range(0, 3)])
+    x = np.linspace(1, 2, num=3)
+    y = np.linspace(3, 4, num=3)
+
+    x1 = np.linspace(10, 20, num=3)
+    y1 = np.linspace(30, 40, num=3)
+
+    x2 = np.linspace(100, 200, num=3)
+    y2 = np.linspace(300, 400, num=3)
+
+    param = PlotlyParams()
+
+    pop = PortPlot(n, x, y, x1, y1, x2, y2)
+    pop.plotly_result(plot_id="sim_and_frontier", with_labels=False)
+    pop.plt.show(config=param.get_plotly_config())

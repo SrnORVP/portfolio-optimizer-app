@@ -2,6 +2,7 @@ from copy import copy, deepcopy
 from io import BytesIO, StringIO
 from pathlib import Path
 
+from PortOpt.params import PlotlyParams
 from matplotlib.patches import FancyArrowPatch
 from typing import TypeAlias
 
@@ -56,6 +57,7 @@ class PortPlot:
     }
     _plot_vals_dict = dict()
     _collection = dict()
+    _plotly_param = PlotlyParams
 
     def __init__(
         self,
@@ -209,19 +211,19 @@ class PortPlot:
 
     def plotly_result(self, plot_id="stock", with_labels=True, **kwargs):
         # TODO
-        # add axis name
-        # legend placement
-        # margin
         # labels
 
-        # Plotly config
-        # config = {'scrollZoom': True}
+        param = self._plotly_param()
 
         self._check_plot_possible(plot_id)
 
         x_all, y_all = self._all_x(plot_id), self._all_y(plot_id)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=x_all, y=y_all, mode="markers", name=self.SCATTER_PLOT_NAME))
+        fig.add_trace(
+            go.Scatter(x=x_all, y=y_all, mode="markers", name=self.SCATTER_PLOT_NAME)
+        )
+
+        fig.update_layout(**param.get_plotly_layout())
 
         if with_labels:
             raise NotImplementedError
@@ -239,6 +241,8 @@ class PortPlot:
 
         self.plt = fig
 
+    # def show_plotly_result(self, plot_id="stock", with_labels=True, **kwargs):
+
     def plot_collecton(
         self,
         cases=None,
@@ -248,41 +252,44 @@ class PortPlot:
     ):
         cases = self.plots_list if cases is None else cases
         # [k for k, v in self._possible_plots.items() if v]
-        ret_coll = dict()
+        param = self._plotly_param()
         eng, res = engine
 
         match eng:
             case "plotly":
-                p = {"with_labels": kwargs.pop("with_labels")}
-                for e in cases:
-                    self.plotly_result(plot_id=e, **p, **kwargs)
-                    ret_coll[e] = deepcopy(self.plt)
-
                 match res:
                     case "html":
-                        for k, v in ret_coll.items():
-                            self._collection[k] = v.to_html(
+                        p = {"with_labels": kwargs.pop("with_labels")}
+                        for e in cases:
+                            self.plotly_result(plot_id=e, **p, **kwargs)
+                            # ret_coll[e] = deepcopy(self.plt)
+                            # for k, v in ret_coll.items():
+                            self._collection[e] = self.plt.to_html(
                                 include_plotlyjs="cdn",
                                 full_html=True,
+                                config=param.get_plotly_config(),
                                 **kwargs,
                                 # default_width=html_width,
                                 # default_height=html_height,
-                                # include_plotlyjs="directory"
                             )
                     case "png":
                         raise NotImplementedError
+                    case "show":
+                        p = {"with_labels": kwargs.pop("with_labels")}
+                        for e in cases:
+                            self.plotly_result(plot_id=e, **p, **kwargs)
+                            self.plt.show(config=param.get_plotly_layout())
 
             case "matplotlib":
-                for e in cases:
-                    self.plot_result(plot_id=e, **kwargs)
-                    ret_coll[e] = deepcopy(self.plt)
-
                 match res:
                     case "html":
-                        for k, v in ret_coll.items():
+                        for e in cases:
+                            self.plot_result(plot_id=e, **kwargs)
+                            # ret_coll[e] = deepcopy(self.plt)
+                            # for k, v in ret_coll.items():
                             sio = StringIO()
-                            v.savefig(sio, format="svg", pad_inches=0.05)
-                            self._collection[k] = sio.getvalue()
+                            self.plt.savefig(sio, format="svg", pad_inches=0.05)
+                            self._collection[e] = sio.getvalue()
                     case "png":
                         raise NotImplementedError
                         # for k, v in ret_coll.items():
