@@ -1,3 +1,5 @@
+from PortOpt.hull import scipy_convex_hull
+from flask.cli import F
 import pytest
 
 import pandas as pd, numpy as np
@@ -125,7 +127,7 @@ def test_identify_plotly():
     pop.plt.write_html(".plots/plotly/10.html", include_plotlyjs="directory")
 
 
-@pytest.mark.work
+@pytest.mark.plot
 def test_show_plot():
     n = np.array([str(e) for e in range(0, 3)])
     x = np.linspace(1, 2, num=3)
@@ -138,7 +140,23 @@ def test_show_plot():
     y2 = np.linspace(300, 400, num=3)
 
     param = PlotlyParams()
-
     pop = PortPlot(n, x, y, x1, y1, x2, y2)
-    pop.plotly_result(plot_id="sim_and_frontier", with_labels=False)
-    pop.plt.show(config=param.get_plotly_config())
+    pop.plotly_result(plot_id="all", with_labels=True)
+    # pop.plotly_result(plot_id="sim_and_frontier", with_labels=False)
+    pop.plt.show(config=param.get_config())
+
+
+@pytest.mark.plot
+def test_centroid_labels(get_random):
+    sim = get_random
+
+    x, y = scipy_convex_hull(sim[:, 0], sim[:, 1], left_hull_only=False)
+    n = [str(e) * 5 for e in range(x.shape[0])]
+    print(n, x, y)
+    x1, y1 = sim[:, 0], sim[:, 1]
+    # print(x1, y1)
+
+    param = PlotlyParams()
+    pop = PortPlot(n, x, y, x1, y1, x, y)
+    pop.plotly_result(plot_id="all", with_labels=True)
+    pop.plt.show(config=param.get_config())

@@ -3,7 +3,7 @@ import pytest
 
 from pydantic import ValidationError
 
-from Server.app import ParseInput
+from Server.server import ParseInput
 
 
 @pytest.mark.xfail(raises=ValidationError)

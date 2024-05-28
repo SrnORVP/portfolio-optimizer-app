@@ -69,13 +69,21 @@ class PlotlyParams:
         }
         return config
 
-    def get_plotly_layout(self, margin=True, legend=True, modebar=True):
+    def get_layout(self, margin=True, legend=True, modebar=True):
         l = self.layout
         l = {**l, "margin": self.margin_layout} if margin else l
         l = {**l, "legend": self.legend_layout} if legend else l
         l = {**l, "modebar": self.modebar} if modebar else l
         return l
 
-    def get_plotly_config(self):
+    def get_config(self):
         c = self.config
         return c
+
+    def get_textpos(self):
+        return [
+            ("top center", -45, 45),
+            ("middle left", -135, -45),
+            ("middle right", 45, 135),
+            ("bottom center", 999, -999),
+        ]

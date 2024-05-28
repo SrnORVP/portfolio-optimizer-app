@@ -59,11 +59,13 @@ def mocked_wt_weight(mocked_ef_no_change):
 
 @pytest.fixture
 def real_ef():
+    # codes = ["GOOG", "AAPL", "MSFT", "NVDA", "TSLA", "AMD"]
     codes = ["GOOG", "AAPL", "MSFT"]
     format = "%Y-%m-%d"
 
     start = "2017-03-03"
-    end = "2022-03-03"
+    # end = "2021-03-03"
+    end = "2021-12-03"
 
     # start = dt.strptime("2019-03-08", format)
     # end = (start + td(100)).date()
@@ -98,6 +100,6 @@ def get_square():
 @pytest.fixture
 def get_random():
     gen = default_rng()
-    arr = gen.normal(1.5, 0.20, (900, 2))
+    arr = gen.normal(1.5, 0.20, size=(900, 2))
     return arr
 

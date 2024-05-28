@@ -21,7 +21,7 @@ def test_frontier(mocked_ef):
 
 
 @pytest.mark.main
-# @pytest.mark.work
+@pytest.mark.work
 def test_plotly_simu(simulated_real_ef):
     ef = simulated_real_ef
     plot_dir = "./.ef_plots"
@@ -29,8 +29,11 @@ def test_plotly_simu(simulated_real_ef):
     files = [*Path(plot_dir).glob("*")]
     assert len(files) == 1
 
-    ef.gen_plot_collection(write_disk=plot_dir, with_labels=False)
-    # ef.get_plot_collection(write_disk=plot_dir, engine=("matplotlib", "html"), with_labels=False)
+    # ef.gen_plot_collection(write_disk=plot_dir)
+    ef.gen_plot_collection(
+        write_disk=plot_dir, engine=("plotly", "html"), with_labels=True, cases=["all"]
+    )
+    # ef.get_plot_collection(write_disk=plot_dir, engine=("matplotlib", "html"))
 
     files = [*Path(plot_dir).glob("*.html")]
     assert len(files) != 0

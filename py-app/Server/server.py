@@ -220,7 +220,7 @@ def serve_chart(cache):
     plot_only = content["chart"]
     EF_ENGINE.gen_plot_collection(
         # write_disk=DATAPATH,
-        with_labels=False,
+        with_labels=True,
         cases=[plot_only],
         default_width=content["fwidth"] * SCALE,
         default_height=content["fheight"] * SCALE,

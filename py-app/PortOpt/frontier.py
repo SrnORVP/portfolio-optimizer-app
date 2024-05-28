@@ -163,6 +163,8 @@ class EfficientFrontier:
         )
         print(f"Simulation ran {self.runs} cases in {perf_counter() - start:.4f} secs.")
 
+# ------------------------------------------------------------------------------------------
+
     def _init_plot_object(self):
         n, ris, ret = self._annual_metrics
         s_ris = (self.sim_result.get(self.COL_P_RISK, None)).values
@@ -215,9 +217,15 @@ class EfficientFrontier:
     # ------------------------------------------------------------------------------------------
 
     def _get_convex_hull(self):
+        stk_x = np.array([*self.stocks_annual_risk.values()])
+        stk_y = np.array([*self.stocks_annual_return.values()])
+
         sim_x = self.sim_result[self.COL_P_RISK].values
         sim_y = self.sim_result[self.COL_P_RET].values
-        hullx, hully = scipy_convex_hull(sim_x, sim_y)
+
+        hullx, hully = scipy_convex_hull(
+            np.r_[stk_x, sim_x], np.r_[stk_y, sim_y], left_hull_only=True
+        )
 
         self.frontier = pd.DataFrame({self.COL_P_RISK: hullx, self.COL_P_RET: hully})
 

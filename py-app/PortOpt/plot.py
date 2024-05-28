@@ -1,5 +1,6 @@
 from copy import copy, deepcopy
 from io import BytesIO, StringIO
+import math
 from pathlib import Path
 
 from PortOpt.params import PlotlyParams
@@ -22,6 +23,14 @@ def arrow(x, y, ax):
             (x[i - 1], y[i - 1]), (x[i], y[i]), arrowstyle="->", mutation_scale=20
         )
         ax.add_patch(ar)
+
+
+def textpos_by_centroid(cx, cy, x, y, positions):
+    d = math.degrees(math.atan2(x - cx, y - cy))
+    for n, l, u in positions[:-1]:
+        if l <= d < u:
+            return n
+    return positions[-1][0]
 
 
 class PortPlot:
@@ -91,7 +100,7 @@ class PortPlot:
             frontier_return,
         )
         self._check_plot_possibility(*args)
-        self._bind_id_with_plot_xy(*args)
+        self._bind_plot_id_with_xy_values(*args)
 
     @property
     def plots_list(self):
@@ -114,7 +123,7 @@ class PortPlot:
                 self._port_res = (s_ris, s_ret)
                 self._front_res = (f_ris, f_ret)
 
-    def _bind_id_with_plot_xy(self, n, ris, ret, s_ris, s_ret, f_ris, f_ret):
+    def _bind_plot_id_with_xy_values(self, n, ris, ret, s_ris, s_ret, f_ris, f_ret):
         self._plot_vals_dict = dict()
         for k, possible in self._possible_plots.items():
             if possible:
@@ -140,6 +149,9 @@ class PortPlot:
                         )
             else:
                 self._plot_vals_dict[k] = None
+
+    def _data_centroid(self, plot_id):
+        return np.average(self._all_x(plot_id)), np.average(self._all_y(plot_id))
 
     def _all_x(self, plot_id):
         return np.hstack(self._plot_vals_dict[plot_id][0])
@@ -210,11 +222,7 @@ class PortPlot:
         self.ax = ax
 
     def plotly_result(self, plot_id="stock", with_labels=True, **kwargs):
-        # TODO
-        # labels
-
         param = self._plotly_param()
-
         self._check_plot_possible(plot_id)
 
         x_all, y_all = self._all_x(plot_id), self._all_y(plot_id)
@@ -223,10 +231,28 @@ class PortPlot:
             go.Scatter(x=x_all, y=y_all, mode="markers", name=self.SCATTER_PLOT_NAME)
         )
 
-        fig.update_layout(**param.get_plotly_layout())
+        fig.update_layout(**param.get_layout())
 
         if with_labels:
-            raise NotImplementedError
+            cx, cy = self._data_centroid(plot_id)
+            n_stk = self._stocks[0]
+            x_stk = self._stocks[1]
+            y_stk = self._stocks[2]
+            pos = [
+                textpos_by_centroid(cx, cy, x, y, positions=param.get_textpos())
+                for n, x, y in zip(*self._stocks)
+            ]
+
+            fig.add_trace(
+                go.Scatter(
+                    x=x_stk,
+                    y=y_stk,
+                    name="Stock Codes",
+                    mode="markers+text",
+                    text=n_stk,
+                    textposition=pos,
+                )
+            )
 
         match plot_id:
             case "all" | "with_frontier" | "sim_and_frontier":
@@ -258,8 +284,9 @@ class PortPlot:
         match eng:
             case "plotly":
                 match res:
+
                     case "html":
-                        p = {"with_labels": kwargs.pop("with_labels")}
+                        p = {"with_labels": kwargs.pop("with_labels", False)}
                         for e in cases:
                             self.plotly_result(plot_id=e, **p, **kwargs)
                             # ret_coll[e] = deepcopy(self.plt)
@@ -267,18 +294,19 @@ class PortPlot:
                             self._collection[e] = self.plt.to_html(
                                 include_plotlyjs="cdn",
                                 full_html=True,
-                                config=param.get_plotly_config(),
+                                config=param.get_config(),
                                 **kwargs,
                                 # default_width=html_width,
                                 # default_height=html_height,
                             )
+
                     case "png":
                         raise NotImplementedError
                     case "show":
-                        p = {"with_labels": kwargs.pop("with_labels")}
+                        p = {"with_labels": kwargs.pop("with_labels", False)}
                         for e in cases:
                             self.plotly_result(plot_id=e, **p, **kwargs)
-                            self.plt.show(config=param.get_plotly_layout())
+                            self.plt.show(config=param.get_config())
 
             case "matplotlib":
                 match res:
@@ -290,6 +318,7 @@ class PortPlot:
                             sio = StringIO()
                             self.plt.savefig(sio, format="svg", pad_inches=0.05)
                             self._collection[e] = sio.getvalue()
+
                     case "png":
                         raise NotImplementedError
                         # for k, v in ret_coll.items():

@@ -16,7 +16,7 @@ report_mode = "-rxX"
 # report on xpassed
 report_mode = "-rX"
 # report on passed but with output
-# report_mode = "-rP"
+report_mode = "-rfEP"
 
 ################################################
 # TODO
