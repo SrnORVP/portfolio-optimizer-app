@@ -3,7 +3,6 @@ from io import BytesIO, StringIO
 from pathlib import Path
 
 from matplotlib.patches import FancyArrowPatch
-import pytest
 from typing import TypeAlias
 
 import pandas as pd, numpy as np
@@ -26,6 +25,8 @@ def arrow(x, y, ax):
 
 class PortPlot:
     FIGSIZE = (10, 8)
+    LINE_PLOT_NAME = "Frontier Bound"
+    SCATTER_PLOT_NAME = "Result"
 
     @classmethod
     def _check_zipable(cls, x_vals: nda, y_vals: nda):
@@ -207,11 +208,20 @@ class PortPlot:
         self.ax = ax
 
     def plotly_result(self, plot_id="stock", with_labels=True, **kwargs):
+        # TODO
+        # add axis name
+        # legend placement
+        # margin
+        # labels
+
+        # Plotly config
+        # config = {'scrollZoom': True}
+
         self._check_plot_possible(plot_id)
 
         x_all, y_all = self._all_x(plot_id), self._all_y(plot_id)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=x_all, y=y_all, mode="markers", name="markers"))
+        fig.add_trace(go.Scatter(x=x_all, y=y_all, mode="markers", name=self.SCATTER_PLOT_NAME))
 
         if with_labels:
             raise NotImplementedError
@@ -223,7 +233,7 @@ class PortPlot:
                         x=self._front_res[0],
                         y=self._front_res[1],
                         mode="lines",
-                        name="lines",
+                        name=self.LINE_PLOT_NAME,
                     )
                 )
 
@@ -237,7 +247,6 @@ class PortPlot:
         **kwargs,
     ):
         cases = self.plots_list if cases is None else cases
-        print(cases)
         # [k for k, v in self._possible_plots.items() if v]
         ret_coll = dict()
         eng, res = engine
@@ -246,7 +255,6 @@ class PortPlot:
             case "plotly":
                 p = {"with_labels": kwargs.pop("with_labels")}
                 for e in cases:
-                    print(e)
                     self.plotly_result(plot_id=e, **p, **kwargs)
                     ret_coll[e] = deepcopy(self.plt)
 

@@ -1,11 +1,8 @@
 <script>
-	import { Group, Button, Divider, Grid, Notification, Space, Text } from '@svelteuidev/core';
-	import { Accordion } from '@svelteuidev/core';
-	import { Tooltip } from '@svelteuidev/core';
+	import { Tooltip, Group, Button } from '@svelteuidev/core';
 	import { ExclamationTriangle, Check } from 'radix-icons-svelte';
 
 	export let messages;
-	// $: messages, console.log(messages);
 
 	let buttonStyle = { minWidth: '5rem' };
 	// let tooltipStyle = { maxWidth: '10rem' };

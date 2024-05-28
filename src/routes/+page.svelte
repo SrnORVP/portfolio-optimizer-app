@@ -1,13 +1,12 @@
 <script>
-	import { Accordion, Button, Group, Tabs, Title } from '@svelteuidev/core';
-	import { afterUpdate, onMount, tick } from 'svelte';
+	import { Accordion, Tabs, Title } from '@svelteuidev/core';
+	import { onMount } from 'svelte';
 
 	import ConfigGroup from '$lib/Groups/Config.svelte';
 	import ChartsGroup from '$lib/Groups/Charts.svelte';
 	import ReviewGroup from '$lib/Groups/Review.svelte';
 
 	import { getFetch, postFetch } from '$lib/fetchHandler';
-	import InputComp from '$lib/Comps/Input2.svelte';
 
 	// let overrideStyle = {
 	// 	fontSize: '1.5rem',
@@ -49,7 +48,7 @@
 		fontSize: 26,
 		lineHeight: 1.35,
 		margin: '0.75rem 0 0.75rem 0',
-		padding: '0 2rem 0 0'
+		padding: '0 1rem 0 0'
 	};
 
 	let defAccord = ['config', 'optimize'];
@@ -91,9 +90,13 @@
 	</Tabs.Tab>
 
 	<Tabs.Tab label="Visualization" override={overrideStyle} on:click>
-		<div slot="control">Choose the chart to display</div>
 		<ChartsGroup bind:chartNames />
 	</Tabs.Tab>
+
+	<Tabs.Tab label="Readme" override={overrideStyle} on:click>
+		README
+	</Tabs.Tab>
+
 </Tabs>
 
 <!-- bind:noticeMsg

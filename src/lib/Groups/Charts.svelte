@@ -1,5 +1,5 @@
 <script>
-	import { Stack, fns, Center, Space, Group, Title, Flex, Divider } from '@svelteuidev/core';
+	import { Stack, Loader, Center } from '@svelteuidev/core';
 
 	import { getFetch, postFetch } from '$lib/fetchHandler';
 	import SelectComp from '$lib/Comps/Select2.svelte';
@@ -11,34 +11,34 @@
 	let selData;
 	let frameHeight;
 	let frameWidth;
+	let isLoading = true;
 
 	$: chartNames, updateSelections();
 	$: chartSelected, postPlotState();
 
-	async function getChartState() {
-		const resp = await getFetch();
-		chartNames = resp.charts;
-		chartSelected = resp.chart;
-		chartContent = resp.html;
-	}
-
 	async function updateSelections() {
 		if (!!chartNames) {
 			selData = chartNames.map((e) => ({ label: e, value: e }));
+			chartSelected = '';
+			isLoading = true;
 		}
 	}
 
 	async function postPlotState() {
+		isLoading = true;
+		chartContent = '<html/>';
 		if (!!chartSelected) {
 			let data = {
-				state: "p",
+				state: 'p',
 				chart: chartSelected,
 				fheight: frameHeight,
 				fwidth: frameWidth
-				// html: chartContent
 			};
 			let resp = await postFetch(data);
 			chartContent = resp.html;
+			if (!!chartContent) {
+				isLoading = false;
+			}
 		}
 	}
 </script>
@@ -50,5 +50,11 @@
 		display="Choose Chart to display"
 		explain="Different chart content different data"
 	/>
+
+	{#if isLoading}
+		<Center>
+			<Loader variant="dots" />
+		</Center>
+	{/if}
 	<FrameComp bind:value={chartContent} bind:height={frameHeight} bind:width={frameWidth} />
 </Stack>

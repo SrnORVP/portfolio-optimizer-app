@@ -1,29 +1,40 @@
+FROM node:alpine
 
-
-ARG PYTHON_VERSION=3.11.9
-
-FROM python:alpine as base
-
+EXPOSE 3333
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+RUN apk add --no-cache --virtual .pydep python3 py3-pip
+# RUN apk add --no-cache gcc musl-dev linux-headers
+
+########################################
+
 COPY req.txt .
 RUN pip3 install --no-cache-dir --break-system-packages -r req.txt
+COPY package*.json .
+RUN npm install
+RUN npm cache clean --force
+
+########################################
 
 COPY ./py-app py-app
-CMD python py-app/flask.py
+COPY ./build build
 
-############################################################
+########################################
 
+# Download dependencies as a separate step to take advantage of Docker's caching.
+# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
+# Leverage a bind mount to requirements.txt to avoid having to copy them into
+# into this layer.
 # RUN --mount=type=cache,target=/root/.cache/pip \
 #     --mount=type=bind,source=requirements.txt,target=requirements.txt \
 #     python -m pip install -r requirements.txt
 
-# EXPOSE 8000
-# CMD gunicorn 'myapp.example:app' --bind=0.0.0.0:8000
+# Switch to the non-privileged user to run the application.
+# USER appuser
 
-############################################################
-# FROM rust:alpine as base
-# RUN cargo build --manifest-path ./rs/src/main.rs
+########################################
+
+CMD python3 "py-app/app.py"

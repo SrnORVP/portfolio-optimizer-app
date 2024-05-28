@@ -1,5 +1,6 @@
 import os
 from datetime import datetime as dt
+from time import sleep
 from datetime import timedelta as td
 from pathlib import Path
 
@@ -14,7 +15,7 @@ global cache
 
 APP = Flask(__name__)
 APP.static_folder = (Path(APP.root_path) / "../../build").resolve(strict=True)
-DATAPATH = (Path(APP.root_path) / "../../.data").resolve(strict=True)
+# DATAPATH = (Path(APP.root_path) / "../../.data").resolve(strict=True)
 # print(APP.static_folder)
 
 
@@ -55,7 +56,7 @@ class MockCache:
         "precision": "model precisions",
         "ratio": "Model representativeness",
         "restricted": "server restriction",
-        "date": "date span",
+        "date": "same dates",
     }
 
     def __init__(self) -> None:
@@ -211,7 +212,7 @@ def run(cache):
 
 
 def serve_chart(cache):
-    SCALE = 0.985
+    SCALE = 0.98
 
     content = cache.content
 
@@ -225,6 +226,8 @@ def serve_chart(cache):
         default_height=content["fheight"] * SCALE,
     )
     cache.update("html", EF_ENGINE.plot_collection[plot_only])
+
+    sleep(2)
     return cache
 
     # pat = content["chart"] + ".html"

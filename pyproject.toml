@@ -31,7 +31,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 flask = "py-app.app:main"
 main = "py-app.main:main"
-test = "tests.main:main"
+test = "tests.run:main"
 
 
 [tool.pytest.ini_options]

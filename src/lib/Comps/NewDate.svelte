@@ -107,7 +107,7 @@
 	$: dateDesc = value;
 </script>
 
-<InputWrapper label={display} description={`Picked: ${dateDesc}`}>
+<InputWrapper label={display} description={`Selected: ${dateDesc}`}>
 	<Stack spacing={10}>
 		<Group grow>
 			<ActionIcon variant="default" on:click={() => changeMonth(-1)}

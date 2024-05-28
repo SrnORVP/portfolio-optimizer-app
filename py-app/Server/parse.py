@@ -37,7 +37,7 @@ class ParseInput(BaseModel):
             if ratio < RATIO_LIMIT:
                 raise PydanticCustomError(
                     "app_restriction",
-                    f"Only '{ratio:.0%}' of possibilities are covered by the simulation. With the number of stocks selected, there is  '{l}' of possibilities, which current number of runs '{r}' covers a small portion. Try increasing number of runs or reducing number of stock code.",
+                    f"Model coverage ('ratio:.0%') is below the 50% threshold, try increasing number of runs or reducing number of stock codes. Currently, the number of runs is '{r}', while the number of possibilities is '{l}'.",
                 )
         # print(r, l)
         return v
@@ -57,7 +57,7 @@ class ParseInput(BaseModel):
             if e > restrictions[p]:
                 raise PydanticCustomError(
                     "app_restriction",
-                    f"In restricted mode, number of stock entries should be <{e}, when precision is {p}. \n Try reducing the precision or reducing number of stock codes.",
+                    f"In restricted mode, number of stock entries is restricted to '<{e}', for a given precision of '{p}'. Try reducing the precision or number of stock codes.",
                 )
         return v
 
@@ -71,6 +71,6 @@ class ParseInput(BaseModel):
             if diff < 1:
                 raise PydanticCustomError(
                     "app_restriction",
-                    f"The different between start date and end date are too close at '{diff}' days.",
+                    f"Start date and end date cannot be on the same date.",
                 )
         return v

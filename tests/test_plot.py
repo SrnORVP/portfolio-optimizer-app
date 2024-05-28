@@ -37,7 +37,6 @@ def test_stack(plot_dummy):
 
 
 @pytest.mark.plot
-# @pytest.mark.work
 def test_identify():
     n = np.array([str(e) for e in range(0, 3)])
     x = np.linspace(1, 2, num=3)
@@ -79,6 +78,7 @@ def test_identify():
 
 
 @pytest.mark.plot
+@pytest.mark.work
 def test_identify_plotly():
     n = np.array([str(e) for e in range(0, 3)])
     x = np.linspace(1, 2, num=3)

@@ -27,7 +27,7 @@
 
 <style>
 	.flex {
-		margin: 5rem 5% 0;
+		margin: 1rem 1% 0;
 		/* margin-top: 10rem; */
 	}
 </style>

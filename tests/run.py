@@ -2,8 +2,8 @@ import pytest
 
 ################################################
 # mark_name = "data"
-mark_name = "serv"
-# mark_name = "work"
+# mark_name = "serv"
+mark_name = "work"
 
 ################################################
 force_run_xfail = False
@@ -20,7 +20,9 @@ report_mode = "-rX"
 
 ################################################
 # TODO
-a = "--collect-only"
+list_possible_tests = False
+# list_possible_tests = True
+list_possible_tests =  "--collect-only" if list_possible_tests else ""
 # list all the test found
 
 ################################################
@@ -28,7 +30,7 @@ def main():
     cmd_list = [
         force_run_xfail,
         report_mode,
-        a,
+        list_possible_tests,
         "-vv",
         "-m",
         mark_name,

@@ -8,25 +8,16 @@
 </script>
 
 <Stack override={overrideStyle}>
-	<Flex gap="xl">
+	<Flex gap="sm">
 		<Center>
-			<a href="/" style="text-decoration:none;"><Title order={1} override={overrideStyle}>Asset Allocation</Title></a>
+			<a href="/" style="text-decoration:none;"
+				><Title order={2} override={overrideStyle}>Asset Allocation</Title></a
+			>
 		</Center>
-
-		<!-- <Stack>
-			<Space h="xs" />
-			<a href="/" style="text-decoration:none;"><Title order={3}>Home</Title></a>
-		</Stack> -->
-
-		<!-- <Stack>
-			<Space h="xs" />
-			<a href="/chart" style="text-decoration:none;"><Title order={3}>Chart</Title></a>
-		</Stack> -->
-
 		<Stack>
 			<Space h="xs" />
-			<a href="/about" style="text-decoration:none;"><Title order={3}>About</Title></a>
+			<Title order={3}>using Monte Carlo Simulation</Title>
 		</Stack>
 	</Flex>
-	<Divider override={overrideStyle}>aasdsaad</Divider>
+	<Divider override={overrideStyle}></Divider>
 </Stack>

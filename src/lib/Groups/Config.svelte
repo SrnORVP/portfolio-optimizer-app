@@ -1,6 +1,5 @@
 <script>
-	import { Button, Stack, fns, Center, Space, Grid, Title, Flex, Divider } from '@svelteuidev/core';
-
+	import { Stack, Grid } from '@svelteuidev/core';
 
 	import InputComp from '$lib/Comps/Input2.svelte';
 	import NumInpComp from '$lib/Comps/NumInput.svelte';
@@ -42,11 +41,11 @@
 		</Grid.Col>
 
 		<Grid.Col span={3} override={overrideStyle}>
-			<DateComp bind:value={startDate} display="Pick start date" />
+			<DateComp bind:value={startDate} display="Select start date" />
 		</Grid.Col>
 
 		<Grid.Col span={3} override={overrideStyle}>
-			<DateComp bind:value={endDate} display="Pick end date" />
+			<DateComp bind:value={endDate} display="Select end date" />
 		</Grid.Col>
 	</Grid>
 </Stack>

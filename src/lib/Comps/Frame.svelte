@@ -4,9 +4,10 @@
 	export let value;
 	export let width;
 	export let height;
-	$: ({ width, height } = $elementSize);
 
 	const [elementSize, ref] = useElementSize();
+
+	$: ({ width, height } = $elementSize);
 </script>
 
 <div class="container">
@@ -15,11 +16,10 @@
 		class="plotFrame"
 		id="plotFrame"
 		title="Plotly Plots"
+		srcdoc={value}
 		width="100%"
 		height="100%"
-		srcdoc={value}
-	>
-	</iframe>
+	/>
 </div>
 
 <style>
@@ -34,6 +34,7 @@
 	}
 
 	.plotFrame {
+		transition: all 1s ease-out;
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -43,5 +44,4 @@
 		/* width: 100%; */
 		/* height: 100%; */
 	}
-
 </style>
