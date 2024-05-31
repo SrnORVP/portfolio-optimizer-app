@@ -5,14 +5,9 @@
 	import ConfigGroup from '$lib/Groups/Config.svelte';
 	import ChartsGroup from '$lib/Groups/Charts.svelte';
 	import ReviewGroup from '$lib/Groups/Review.svelte';
+	import AboutGroup from '$lib/Groups/About.svelte';
 
 	import { getFetch, postFetch } from '$lib/fetchHandler';
-
-	// let overrideStyle = {
-	// 	fontSize: '1.5rem',
-	// 	fontWeight: 200,
-	// 	margin: '1rem 0 1rem 0'
-	// };
 
 	let stockValue;
 	let runValue;
@@ -31,7 +26,6 @@
 	onMount(getDefaultStates);
 
 	async function resolveDefaultStates(appState) {
-		console.log('after', appState);
 		stockValue = appState.codes;
 		runValue = appState.runs;
 		precValue = appState.precision;
@@ -84,7 +78,6 @@
 					<Title order={3}>Optimization</Title>
 				</div>
 				Submit
-				<!-- <SubmitComp /> -->
 			</Accordion.Item>
 		</Accordion>
 	</Tabs.Tab>
@@ -94,10 +87,6 @@
 	</Tabs.Tab>
 
 	<Tabs.Tab label="Readme" override={overrideStyle} on:click>
-		README
+		<AboutGroup />
 	</Tabs.Tab>
-
 </Tabs>
-
-<!-- bind:noticeMsg
-bind:errorMsg -->

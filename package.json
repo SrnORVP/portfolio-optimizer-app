@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
+		"tauriBuild": "vite build",
 		"build": "vite build --watch",
 		"preview": "vite preview",
 		"lint": "prettier --check . && eslint .",
@@ -30,6 +31,7 @@
 		"@svelteuidev/dates": "^0.15.6",
 		"@tauri-apps/api": "^1.5.3",
 		"dayjs": "^1.11.11",
-		"radix-icons-svelte": "^1.2.1"
+		"radix-icons-svelte": "^1.2.1",
+		"svelte-markdown": "^0.4.1"
 	}
 }

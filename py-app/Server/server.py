@@ -1,13 +1,12 @@
-import os
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta as td
 from time import sleep
-from datetime import timedelta as td
 from pathlib import Path
 
-from Server.parse import ParseInput
-from flask import Flask, request, send_from_directory, Response, Request, jsonify
-from PortOpt import EfficientFrontier
 from pydantic import ValidationError
+from flask import Flask, request, send_from_directory, Response, Request, jsonify
+
+from Server.parse import ParseInput
+from PortOpt import EfficientFrontier
 
 
 global EF_ENGINE
@@ -125,13 +124,18 @@ cache = MockCache()
 
 
 @APP.route("/")
-def hello():
+def index():
     return send_from_directory(APP.static_folder, "index.html")
 
 
 @APP.route("/favicon.png")
-def icon():
+def favicon():
     return send_from_directory(APP.static_folder, "favicon.png")
+
+
+@APP.route("/README.md")
+def readme():
+    return send_from_directory(APP.static_folder, "README.md")
 
 
 @APP.route("/_app/<path:path>")
@@ -212,7 +216,7 @@ def run(cache):
 
 
 def serve_chart(cache):
-    SCALE = 0.98
+    SCALE = 0.95
 
     content = cache.content
 
@@ -226,19 +230,5 @@ def serve_chart(cache):
         default_height=content["fheight"] * SCALE,
     )
     cache.update("html", EF_ENGINE.plot_collection[plot_only])
-
-    sleep(2)
+    sleep(1)
     return cache
-
-    # pat = content["chart"] + ".html"
-    # if files := [e for e in DATAPATH.glob(pat)]:
-    #     with open(files[0], "r") as f:
-    #         html_string = f.read()
-    #     return "html", html_string
-    # else:
-    #     return "html", "Selected chart is not found"
-
-    # if path == "plotly.min.js":
-    #     # print(path)
-    #     # print(dp)
-    #     return send_from_directory(dp, path)

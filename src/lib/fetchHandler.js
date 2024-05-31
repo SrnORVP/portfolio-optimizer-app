@@ -21,6 +21,8 @@
 //     target: ''
 // };
 
+
+
 export async function postFetch(data) {
     try {
         const response = await fetch('/post/state', {
@@ -31,20 +33,18 @@ export async function postFetch(data) {
             body: JSON.stringify(data)
         });
         let resp = await response.json();
-        console.log("post_resp", resp);
+        // console.log("post_resp", resp);
         return resp;
     } catch (e) {
         console.error("error", e);
     }
 }
 
-
 export async function getFetch() {
     try {
         const response = await fetch('/get/state');
         let resp = await response.json();
-        console.log("get_resp", resp);
-        // console.log(resp);
+        // console.log("get_resp", resp);
         return resp;
     } catch (e) {
         console.error("error", e);
