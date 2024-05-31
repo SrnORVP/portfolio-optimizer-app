@@ -1,5 +1,5 @@
 This is a data app project using Python (SciPy, NumPy and Pandas), and Javascript (Svelte).
-A hosted example is available by the following link, as hosted on Google Cloud (using Google Cloud Run with Docker). That version is restricted (in terms of number of runs, stock codes and precisions) to reduce computation requirement on Google Cloud.
+A hosted example is available (this website), the Docker containerized app is hosted using Google Cloud Service (Google Cloud Run). The version is restricted (in terms of number of runs, stock codes and precisions) to reduce computation need.
 
 The project itself performs financial asset allocation and portfolio optimization using Monte Carlo simulation. The business logic (written in Python) includes the following steps:
 
