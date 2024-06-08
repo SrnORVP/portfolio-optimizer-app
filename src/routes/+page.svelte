@@ -86,7 +86,7 @@
 		<ChartsGroup bind:chartNames />
 	</Tabs.Tab>
 
-	<Tabs.Tab label="Readme" override={overrideStyle} on:click>
+	<Tabs.Tab label="About" override={overrideStyle} on:click>
 		<AboutGroup />
 	</Tabs.Tab>
 </Tabs>
